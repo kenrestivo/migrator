@@ -108,7 +108,7 @@
        :body)))
 
 
-;;; XXX TODO: there is waaaay too much boilerplate here. Combine into one function.
+;;; XXX TODO: there is waaaay too much boilerplate here. Combine  these fetches into one function.
 
 (s/defn fetch-users
   [{:keys [base-url] :as settings} :- Fetch]
@@ -170,6 +170,8 @@
           :first-post
           (format  base-url channel-hash)
           (fetcher settings)))
+
+;; XXX TODO: again, boilerplate. Combine!
 
 (s/defn save-identity
   [{:keys [fetch storage]} :- FetchArgs
