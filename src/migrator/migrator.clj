@@ -55,7 +55,7 @@
 (def paths
   {:users "%s/migrator/export/users"
    :channels "%s/migrator/export/channel_hashes/%d"
-   :identities "%s/migrator/export/identity/%s"
+   :identity "%s/migrator/export/identity/%s"
    :items  "%s/migrator/export/items/%s/%d/%d"
    :first-post "%s/migrator/export/first_post/%s"
    :version "%s/migrator/version"})
@@ -113,68 +113,15 @@
        :body)))
 
 
-;;; XXX TODO: there is waaaay too much boilerplate here. Combine  these fetches into one function.
 
-(s/defn fetch-users
-  [{:keys [base-url] :as settings} :- Fetch]
-  (log/trace "fetching users" base-url)
-  (some-> paths
-          :users
-          (format  base-url)
+(s/defn fetch-wrap
+  [{:keys [base-url] :as settings} :- Fetch 
+   path-type :- s/Keyword
+   & args]
+  (log/trace "fetching" base-url keyword args)
+  (some-> (apply format (concat [(paths path-type) base-url] args))
           (fetcher settings)))
 
-
-(s/defn fetch-channels
-  [{:keys [base-url] :as settings} :- Fetch
-   account-id :- s/Int]
-  {:pre [(-> account-id nil? not)]}
-  (log/trace "fetching channels for " base-url account-id)
-  (some-> paths
-          :channels
-          (format base-url account-id)
-          (fetcher settings)))
-
-
-
-(s/defn fetch-identity
-  [{:keys [base-url] :as settings} :- Fetch
-   channel-hash :- s/Str]
-  (log/trace "fetching identity (channel) for " base-url channel-hash)
-  (some-> paths
-          :identities
-          (format  base-url channel-hash)
-          (fetcher settings)))
-
-
-(s/defn fetch-items
-  [{:keys [base-url] :as settings} :- Fetch
-   channel-hash :- s/Str
-   year :- s/Int
-   month :- s/Int]
-  (log/trace "fetching items for " base-url channel-hash year month)
-  (some-> paths
-          :items
-          (format  base-url channel-hash year month)
-          (fetcher settings)))
-
-
-(s/defn fetch-version
-  [{:keys [base-url] :as settings} :- Fetch]
-  (log/trace "fetching version" base-url)
-  (some-> paths
-          :version
-          (format  base-url)
-          (fetcher settings)))
-
-
-(s/defn fetch-first-post
-  [{:keys [base-url] :as settings} :- Fetch
-   channel-hash :- s/Str]
-  (log/trace "fetching first post for " base-url channel-hash)
-  (some-> paths
-          :first-post
-          (format  base-url channel-hash)
-          (fetcher settings)))
 
 ;; XXX TODO: again, boilerplate. Combine!
 
@@ -184,16 +131,16 @@
    path :- s/Str]
   (log/trace "saving identity" channel-hash path)
   (some->  fetch
-            (fetch-identity channel-hash)
-            (sppit path)))
+           (fetch-wrap :identity channel-hash)
+           (sppit path)))
 
 (s/defn save-accounts
   [{:keys [fetch storage]} :- FetchArgs
    path :- s/Str]
   (log/trace "saving accounts"  path)
   (some->  fetch
-            fetch-users
-            (sppit path)))
+           (fetch-wrap :users)
+           (sppit path)))
 
 
 (s/defn save-items
@@ -204,8 +151,8 @@
    path :- s/Str]
   (log/trace "saving items" channel-hash path)
   (some->  fetch
-            (fetch-items channel-hash year month)
-            (sppit path)))
+           (fetch-wrap :items channel-hash year month)
+           (sppit path)))
 
 
 (s/defn get-channels
@@ -222,7 +169,7 @@
     (jio/make-parents (str dir "/.start"))
     (catcher
      (some-> fetch
-             (fetch-channels aid)
+             (fetch-wrap :channels aid)
              (spit (str dir "/" channels-file))))))
 
 
@@ -249,7 +196,7 @@
   [settings :- Fetch
    channel-hash :- s/Str]
   (some-> settings
-          (fetch-first-post channel-hash)
+          (fetch-wrap :first-post channel-hash)
           (json/decode true)
           :date
           split-year-month))
@@ -309,8 +256,7 @@
 
 (s/defn test-version*
   [settings :- Fetch]
-  (-> settings
-      fetch-version
+  (-> (fetch-wrap settings :version)
       (json/decode true)
       :version))
 
@@ -378,14 +324,12 @@
       (mount/start))
     )
 
-  (s/explain FetchArgs)
+
   
   (def running
     (future (s/with-fn-validation
               (run-fetch fetch))))
 
-  (s/with-fn-validation
-    (test-version fetch))
   
   (future-done? running)
 
