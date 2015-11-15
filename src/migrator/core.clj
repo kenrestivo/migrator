@@ -47,8 +47,12 @@
 
   (log/error (.getCause *e))
 
-  (s/with-fn-validation
-    (mount/start-with-args (conf/read-and-validate "/home/cust/spaz/src/migrator-configs/spazhub-test.edn")))
+  (do 
+    (mount/stop)
+    (s/with-fn-validation
+      (mount/start-with-args (conf/read-and-validate
+                              "/home/cust/spaz/src/migrator-configs/spazhub-test.edn")))
+    )
 
   (conf/read-and-validate "config.edn")
 

@@ -47,7 +47,9 @@
    (s/required-key :storage) Storage})
 
 
-
+(defn sppit 
+  [data filename]
+  (spit filename data))
 
 
 (def paths
@@ -59,13 +61,16 @@
    :version "%s/migrator/version"})
 
 
+(defn trust-settings
+  []
+  {:trust-store (->  "cacerts.jks" jio/resource .toString)
+   :trust-store-type "jks" 
+   :trust-store-pass "none"})
 
 (s/defn pool-settings
   [{:keys [pool]} :- Fetch]
-  (merge (:pool pool
-                {:trust-store (->  "cacerts.jks" jio/resource .toString)
-                 :trust-store-type "jks" 
-                 :trust-store-pass "none"})))
+  (merge pool (trust-settings)))
+
 
 
 (defn make-retry-fn
@@ -100,11 +105,11 @@
   (log/trace "fetcher: fetching" url)
   (catcher
    (-> url
-       (client/get {:basic-auth [login pw]
-                    :throw-entire-message? true
-                    :as :stream
-                    :retry-handler (make-retry-fn retry-wait max-retries)
-                    :query-params {}})
+       (client/get (merge {:basic-auth [login pw]
+                           :throw-entire-message? true
+                           :retry-handler (make-retry-fn retry-wait max-retries)
+                           :query-params {}} 
+                          (trust-settings)))
        :body)))
 
 
@@ -179,16 +184,16 @@
    path :- s/Str]
   (log/trace "saving identity" channel-hash path)
   (some->  fetch
-           (fetch-identity channel-hash)
-           (jio/copy (java.io.File. path))))
+            (fetch-identity channel-hash)
+            (sppit path)))
 
 (s/defn save-accounts
   [{:keys [fetch storage]} :- FetchArgs
    path :- s/Str]
   (log/trace "saving accounts"  path)
   (some->  fetch
-           fetch-users
-           (jio/copy (java.io.File. path))))
+            fetch-users
+            (sppit path)))
 
 
 (s/defn save-items
@@ -199,8 +204,8 @@
    path :- s/Str]
   (log/trace "saving items" channel-hash path)
   (some->  fetch
-           (fetch-items channel-hash year month)
-           (jio/copy (java.io.File. path))))
+            (fetch-items channel-hash year month)
+            (sppit path)))
 
 
 (s/defn get-channels
@@ -215,10 +220,11 @@
     ;; TODO: error checking, restart
     (log/info "checking/making dir for" dir)
     (jio/make-parents (str dir "/.start"))
-    (some-> fetch
-            (fetch-channels aid)
-            (jio/copy (java.io.File. (str dir "/" channels-file)))
-            )))
+    (catcher
+     (some-> fetch
+             (fetch-channels aid)
+             (spit (str dir "/" channels-file))))))
+
 
 (defn channels-from-json
   [filename]
@@ -244,7 +250,6 @@
    channel-hash :- s/Str]
   (some-> settings
           (fetch-first-post channel-hash)
-          slurp
           (json/decode true)
           :date
           split-year-month))
@@ -306,7 +311,6 @@
   [settings :- Fetch]
   (-> settings
       fetch-version
-      slurp
       (json/decode true)
       :version))
 
@@ -323,16 +327,15 @@
 (s/defn run-fetch
   [{:keys [fetch storage] :as settings} :- FetchArgs]
   (try
-    (client/with-connection-pool (pool-settings fetch)
-      (when (test-version settings)
-        (doto settings
-          (save-accounts (str (:save-directory storage) "/" accounts-file))
-          get-channels
-          get-identities
-          get-items)))
+    (when (test-version settings)
+      (doto settings
+        (save-accounts (str (:save-directory storage) "/" accounts-file))
+        get-channels
+        get-identities
+        get-items))
     (log/info "Completed run for" settings)
     (catch Exception e
-      (log/error e))))
+      (log/error e "Run failed to complete"))))
 
 
 
@@ -384,6 +387,8 @@
   (s/with-fn-validation
     (test-version fetch))
   
+  (future-done? running)
+
 
 
   )
