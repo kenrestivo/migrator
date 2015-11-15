@@ -34,6 +34,9 @@
 
   (future (-main "config.edn"))
 
+  (s/with-fn-validation
+    (mount/start-with-args (conf/read-and-validate "config.edn")))
+
   memdb/memdb
   (mount/args)
   m/fetch

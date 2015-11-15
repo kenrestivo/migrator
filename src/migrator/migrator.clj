@@ -168,6 +168,7 @@
           :let [dir (-> storage :save-directory (str "/" account_id))
                 aid (Integer/parseInt account_id)]]
     ;; TODO: error checking, restart
+    (log/info "checking/making dir for" dir)
     (jio/make-parents (str dir "/.start"))
     (some-> fetch
             (fetch-channels aid)
@@ -237,6 +238,7 @@
   (log/info "Setting up fetcher")
   (try
     ;; just accounts-file instead?
+    (log/info "Making top-level save directory")
     (-> storage :save-directory (str "/.start") jio/make-parents)
     (catch Exception e
       (log/error e)))
@@ -277,8 +279,6 @@
   (s/with-fn-validation
     (test-version fetch))
   
-
-
 
 
   )
