@@ -8,7 +8,5 @@
                 :insecure? false 
                 :default-per-route 10}}
  :storage {:save-directory "/mnt/sdcard/tmp/out"}
- :db {:filename "/mnt/sdcard/tmp/migrator.nip"
-      :autosave-timeout 60000}
  :log {:spit-filename "/mnt/sdcard/tmp/web.log4j"
        :level :info}}

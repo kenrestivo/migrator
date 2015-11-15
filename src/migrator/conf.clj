@@ -17,7 +17,7 @@
 (def Settings
   {(s/required-key :fetch) m/Fetch
    (s/required-key :storage) m/Storage
-   (s/required-key :db) Memdb
+   ;;; (s/required-key :db) Memdb not needed yet
    (s/required-key :log) mlog/Log
    })
 
