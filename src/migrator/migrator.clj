@@ -7,7 +7,7 @@
             [utilza.json :as ujson]
             [clojure.java.io :as jio]
             [schema.core :as s]
-            [migrator.mmemdb :as memdb]
+            [utilza.mmemdb :as memdb]
             [taoensso.nippy :as nippy]
             [clj-http.client :as client]
             [migrator.utils :as utils]

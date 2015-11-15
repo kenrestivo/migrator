@@ -10,7 +10,7 @@
                  [mount "0.1.1"]
                  [com.taoensso/timbre "4.1.2"]
                  [prismatic/schema "1.0.3"]
-                 [utilza "0.1.78"]
+                 [utilza "0.1.80"]
                  [com.taoensso/nippy "2.10.0"]
                  [hiccup "1.0.0"]
                  [php-clj "0.4.1"]

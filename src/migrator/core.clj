@@ -3,7 +3,7 @@
             [migrator.migrator :as m]
             [schema.core :as s]
             [taoensso.timbre :as log]
-            [migrator.mmemdb :as memdb]
+            [utilza.mmemdb :as memdb]
             [mount :as mount]
             [migrator.conf :as conf]
             )
@@ -16,7 +16,6 @@
   [& [conf-file-arg & _]]
   (try
     (let [conf-file (or conf-file-arg "config.edn")]
-      (reset! conf/conf-file conf-file)
       (println "Starting components" conf-file)
       (mount/start-with-args (conf/read-and-validate conf-file)))
     (catch Exception e
