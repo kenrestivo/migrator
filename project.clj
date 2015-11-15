@@ -13,7 +13,7 @@
                  [utilza "0.1.80"]
                  [com.taoensso/nippy "2.10.0"]
                  [hiccup "1.0.0"]
-                 [php-clj "0.4.1"]
+                 [php-clj "0.4.1"] ;;; XXX do i need this anymore?
                  [clj-http "2.0.0"]
                  ]
   :main migrator.core

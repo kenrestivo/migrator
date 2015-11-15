@@ -17,7 +17,9 @@
 
 (def accounts-file "accounts.json")
 (def channels-file "channels.json")
-(def min-supported-plugin-version 1)
+(def identity-file  "identity.json")
+
+(def min-supported-plugin-version 2)
 
 (def ServerCoords {(s/required-key :login) s/Str
                    (s/required-key :pw) s/Str
@@ -45,10 +47,15 @@
    (s/required-key :storage) Storage})
 
 
+
+
+
 (def paths
   {:users "%s/migrator/export/users"
    :channels "%s/migrator/export/channel_hashes/%d"
    :identities "%s/migrator/export/identity/%s"
+   :items  "%s/migrator/export/items/%s/%d/%d"
+   :first-post "%s/migrator/export/first_post/%s"
    :version "%s/migrator/version"})
 
 
@@ -101,6 +108,7 @@
        :body)))
 
 
+;;; XXX TODO: there is waaaay too much boilerplate here. Combine into one function.
 
 (s/defn fetch-users
   [{:keys [base-url] :as settings} :- Fetch]
@@ -132,6 +140,19 @@
           (format  base-url channel-hash)
           (fetcher settings)))
 
+
+(s/defn fetch-items
+  [{:keys [base-url] :as settings} :- Fetch
+   channel-hash :- s/Str
+   year :- s/Int
+   month :- s/Int]
+  (log/trace "fetching items for " base-url channel-hash year month)
+  (some-> paths
+          :items
+          (format  base-url channel-hash year month)
+          (fetcher settings)))
+
+
 (s/defn fetch-version
   [{:keys [base-url] :as settings} :- Fetch]
   (log/trace "fetching version" base-url)
@@ -140,6 +161,15 @@
           (format  base-url)
           (fetcher settings)))
 
+
+(s/defn fetch-first-post
+  [{:keys [base-url] :as settings} :- Fetch
+   channel-hash :- s/Str]
+  (log/trace "fetching first post for " base-url channel-hash)
+  (some-> paths
+          :first-post
+          (format  base-url channel-hash)
+          (fetcher settings)))
 
 (s/defn save-identity
   [{:keys [fetch storage]} :- FetchArgs
@@ -153,8 +183,21 @@
 (s/defn save-accounts
   [{:keys [fetch storage]} :- FetchArgs
    path :- s/Str]
+  (log/trace "saving accounts"  path)
   (some->  fetch
            fetch-users
+           (jio/copy (java.io.File. path))))
+
+
+(s/defn save-items
+  [{:keys [fetch storage]} :- FetchArgs
+   channel-hash :- s/Str
+   year :- s/Int
+   month :- s/Int
+   path :- s/Str]
+  (log/trace "saving items" channel-hash path)
+  (some->  fetch
+           (fetch-items channel-hash year month)
            (jio/copy (java.io.File. path))))
 
 
@@ -184,20 +227,77 @@
        (map :channel_hash)))
 
 
+
+
+(defn split-year-month
+  [s]
+  (->> (clojure.string/split s  #"-")
+       (take 2)
+       (map #(Integer/parseInt %))
+       (zipmap [:year :month])))
+
+
+(s/defn get-first-ym
+  [settings :- Fetch
+   channel-hash :- s/Str]
+  (some-> settings
+          (fetch-first-post channel-hash)
+          slurp
+          (json/decode true)
+          :date
+          split-year-month))
+
+
+(s/defn walk-dir-channel
+  [save-directory]
+  (for [d (utils/directory-names save-directory)
+        f (ufile/file-names (umisc/inter-str "/" [save-directory  d]) (re-pattern channels-file))
+        c (channels-from-json (umisc/inter-str "/" [save-directory d f]))]
+    {:dir d
+     :channel c}))
+
+
 (s/defn get-identities
   "This is the core of the fetcher"
   [{:keys [fetch storage] :as settings} :- FetchArgs]
   (let [{:keys [save-directory]} storage]
-    (doseq [d (utils/directory-names save-directory)
-            f (ufile/file-names (umisc/inter-str "/" [save-directory  d]) (re-pattern channels-file))
-            c (channels-from-json (umisc/inter-str "/" [save-directory d f]))]
-      (log/trace "getting identity" d f c)
+    (doseq [{:keys [dir channel]} (walk-dir-channel save-directory)
+            :let [identity-path (umisc/inter-str "/" [save-directory dir channel identity-file])]]
+      (log/trace "getting identity" dir channel)
       (try
         ;; TODO: check that they don't already exist? and aren't errored?
-        (save-identity settings c (umisc/inter-str "/" [save-directory d (str c ".json")]))
+        (jio/make-parents identity-path)
+        (save-identity settings channel identity-path)
         (catch Exception e
-          (log/error e)))
-      )))
+          (log/error e))))))
+
+
+(s/defn get-channel-items
+  [{:keys [fetch storage] :as settings} :- FetchArgs
+   acct-dir :- s/Str
+   channel-hash :- s/Str]
+  (let [{:keys [year month]} (get-first-ym fetch channel-hash)
+        {:keys [save-directory]} storage]
+    (when (and year month) ;; don't fetch if there's nohody home
+      (doseq [{:keys [year month]} (utils/intervening-year-months year month)
+              :let [item-path (umisc/inter-str "/" 
+                                               [save-directory acct-dir channel-hash year month "items.json"])]]
+        (log/info "making dir for" item-path)
+        (jio/make-parents item-path)
+        (try
+          (save-items settings channel-hash year month item-path)
+          (catch Exception e
+            (log/error e)))))))
+
+
+(s/defn get-items
+  [{:keys [fetch storage] :as settings} :- FetchArgs]
+  (doseq [{:keys [dir channel]} (walk-dir-channel (:save-directory storage))]
+    (log/info "Getting items for" dir channel)
+    (try 
+      (get-channel-items settings dir channel)
+      (catch Exception e
+        (log/error e)))))
 
 
 (s/defn test-version*
@@ -226,7 +326,8 @@
         (doto settings
           (save-accounts (str (:save-directory storage) "/" accounts-file))
           get-channels
-          get-identities)))
+          get-identities
+          get-items)))
     (log/info "Completed run for" settings)
     (catch Exception e
       (log/error e))))
@@ -266,15 +367,17 @@
   (log/info "wtf")
 
   (do
+    (mount/stop)
+
     (s/with-fn-validation
       (mount/start))
-    (mount/stop)
     )
 
   (s/explain FetchArgs)
   
-  (s/with-fn-validation
-    (run-fetch fetch))
+  (def running
+    (future (s/with-fn-validation
+              (run-fetch fetch))))
 
   (s/with-fn-validation
     (test-version fetch))
