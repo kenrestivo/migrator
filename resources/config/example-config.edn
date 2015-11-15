@@ -3,10 +3,7 @@
          :login "testes"
          :max-retries 5
          :retry-wait 5000
-         :pool {:timeout 5 
-                :threads 4 
-                :insecure? false 
-                :default-per-route 10}}
+         }
  :storage {:save-directory "/mnt/sdcard/tmp/out"}
  :log {:spit-filename "/mnt/sdcard/tmp/web.log4j"
        :level :info}}

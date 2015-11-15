@@ -26,18 +26,10 @@
                    (s/required-key :base-url) s/Str})
 
 
-(def Pool 
-  {(s/required-key :timeout) s/Int
-   (s/required-key :threads) s/Int
-   (s/required-key :insecure?) s/Bool
-   (s/required-key :default-per-route) s/Int})
-
-
 (def Fetch
   (merge ServerCoords
          {(s/required-key :max-retries) s/Int
-          (s/required-key :retry-wait) s/Int
-          (s/required-key :pool) Pool}))
+          (s/required-key :retry-wait) s/Int}))
 
 (def Storage
   {(s/required-key :save-directory) s/Str})
@@ -45,11 +37,6 @@
 (def FetchArgs
   {(s/required-key :fetch) Fetch
    (s/required-key :storage) Storage})
-
-
-(defn sppit 
-  [data filename]
-  (spit filename data))
 
 
 (def paths
@@ -66,10 +53,6 @@
   {:trust-store (->  "cacerts.jks" jio/resource .toString)
    :trust-store-type "jks" 
    :trust-store-pass "none"})
-
-(s/defn pool-settings
-  [{:keys [pool]} :- Fetch]
-  (merge pool (trust-settings)))
 
 
 
@@ -118,41 +101,26 @@
   [{:keys [base-url] :as settings} :- Fetch 
    path-type :- s/Keyword
    & args]
-  (log/trace "fetching" base-url keyword args)
+  (log/debug "fetching" base-url path-type args)
   (some-> (apply format (concat [(paths path-type) base-url] args))
           (fetcher settings)))
 
 
-;; XXX TODO: again, boilerplate. Combine!
 
-(s/defn save-identity
-  [{:keys [fetch storage]} :- FetchArgs
-   channel-hash :- s/Str
-   path :- s/Str]
-  (log/trace "saving identity" channel-hash path)
-  (some->  fetch
-           (fetch-wrap :identity channel-hash)
-           (sppit path)))
+(s/defn save-wrap
+  [fetch :- Fetch
+   save-path :- s/Str
+   path-type :- s/Keyword
+   & args]
+  (log/trace "making dir for" save-path)
+  (jio/make-parents save-path)
+  (log/trace "saving" path-type args)
+  (->> args
+       (cons path-type)
+       (cons fetch)
+       (apply fetch-wrap)
+       (spit save-path)))
 
-(s/defn save-accounts
-  [{:keys [fetch storage]} :- FetchArgs
-   path :- s/Str]
-  (log/trace "saving accounts"  path)
-  (some->  fetch
-           (fetch-wrap :users)
-           (sppit path)))
-
-
-(s/defn save-items
-  [{:keys [fetch storage]} :- FetchArgs
-   channel-hash :- s/Str
-   year :- s/Int
-   month :- s/Int
-   path :- s/Str]
-  (log/trace "saving items" channel-hash path)
-  (some->  fetch
-           (fetch-wrap :items channel-hash year month)
-           (sppit path)))
 
 
 (s/defn get-channels
@@ -162,15 +130,13 @@
                                    (str "/" accounts-file) 
                                    ujson/slurp-json 
                                    :users)
-          :let [dir (-> storage :save-directory (str "/" account_id))
+          :let [{:keys [save-directory]} storage
+                dir (umisc/inter-str "/" [save-directory account_id])
                 aid (Integer/parseInt account_id)]]
     ;; TODO: error checking, restart
-    (log/info "checking/making dir for" dir)
-    (jio/make-parents (str dir "/.start"))
     (catcher
-     (some-> fetch
-             (fetch-wrap :channels aid)
-             (spit (str dir "/" channels-file))))))
+     (save-wrap fetch (umisc/inter-str "/" [dir channels-file]) :channels aid))))
+
 
 
 (defn channels-from-json
@@ -195,6 +161,8 @@
 (s/defn get-first-ym
   [settings :- Fetch
    channel-hash :- s/Str]
+  (log/debug "Checking first post date for" channel-hash)
+  ;; TODO: 404 is totally OK here, trap that, don't log it as error, it's not really exceptional
   (some-> settings
           (fetch-wrap :first-post channel-hash)
           (json/decode true)
@@ -217,11 +185,9 @@
   (let [{:keys [save-directory]} storage]
     (doseq [{:keys [dir channel]} (walk-dir-channel save-directory)
             :let [identity-path (umisc/inter-str "/" [save-directory dir channel identity-file])]]
-      (log/trace "getting identity" dir channel)
+      (log/info "Getting identity for account" dir ": " channel)
       (try
-        ;; TODO: check that they don't already exist? and aren't errored?
-        (jio/make-parents identity-path)
-        (save-identity settings channel identity-path)
+        (save-wrap fetch identity-path :identity channel)
         (catch Exception e
           (log/error e))))))
 
@@ -235,11 +201,10 @@
     (when (and year month) ;; don't fetch if there's nohody home
       (doseq [{:keys [year month]} (utils/intervening-year-months year month)
               :let [item-path (umisc/inter-str "/" 
-                                               [save-directory acct-dir channel-hash year month "items.json"])]]
-        (log/info "making dir for" item-path)
-        (jio/make-parents item-path)
+                                               [save-directory acct-dir channel-hash 
+                                                year month "items.json"])]]
         (try
-          (save-items settings channel-hash year month item-path)
+          (save-wrap fetch item-path :items channel-hash year month)
           (catch Exception e
             (log/error e)))))))
 
@@ -262,6 +227,7 @@
 
 (s/defn test-version
   [{:keys [fetch] :as settings} :- FetchArgs]
+  (log/info "Testing to make sure your migrator plugin version is supported")
   (try
     (let [v (test-version* fetch)]
       (<= min-supported-plugin-version v))
@@ -269,13 +235,17 @@
       ;; TODO: check for incorrect plugin path, maybe by testing the WRONG path to see if it succeeds?
       (log/error e))))
 
+(s/defn get-account
+  [{:keys [fetch storage] :as settings} :- FetchArgs]
+  (let [{:keys [save-directory]} storage]
+    (save-wrap fetch (umisc/inter-str "/" [save-directory accounts-file]) :users)))
 
 (s/defn run-fetch
   [{:keys [fetch storage] :as settings} :- FetchArgs]
   (try
     (when (test-version settings)
       (doto settings
-        (save-accounts (str (:save-directory storage) "/" accounts-file))
+        get-account
         get-channels
         get-identities
         get-items))
