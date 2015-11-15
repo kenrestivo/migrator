@@ -112,14 +112,14 @@
    save-path :- s/Str
    path-type :- s/Keyword
    & args]
-  (log/trace "making dir for" save-path)
-  (jio/make-parents save-path)
-  (log/trace "saving" path-type args)
-  (->> args
-       (cons path-type)
-       (cons fetch)
-       (apply fetch-wrap)
-       (spit save-path)))
+  (when-let [data (->> args
+                          (cons path-type)
+                          (cons fetch)
+                          (apply fetch-wrap))]
+    (log/trace "making dir for" save-path)
+    (jio/make-parents save-path)
+    (log/trace "saving" path-type args)
+    (spit save-path data)))
 
 
 
@@ -199,6 +199,7 @@
   (let [{:keys [year month]} (get-first-ym fetch channel-hash)
         {:keys [save-directory]} storage]
     (when (and year month) ;; don't fetch if there's nohody home
+      (log/info "Getting channel items for " channel-hash "starting" year month)
       (doseq [{:keys [year month]} (utils/intervening-year-months year month)
               :let [item-path (umisc/inter-str "/" 
                                                [save-directory acct-dir channel-hash 
@@ -235,7 +236,7 @@
       ;; TODO: check for incorrect plugin path, maybe by testing the WRONG path to see if it succeeds?
       (log/error e))))
 
-(s/defn get-account
+(s/defn get-accounts
   [{:keys [fetch storage] :as settings} :- FetchArgs]
   (let [{:keys [save-directory]} storage]
     (save-wrap fetch (umisc/inter-str "/" [save-directory accounts-file]) :users)))
@@ -245,7 +246,7 @@
   (try
     (when (test-version settings)
       (doto settings
-        get-account
+        get-accounts
         get-channels
         get-identities
         get-items))
