@@ -188,16 +188,16 @@
   "This is the core of the fetcher"
   [{:keys [fetch storage] :as settings} :- FetchArgs]
   (let [{:keys [save-directory]} storage]
-    (doseq [d (utils/directory-names save-directory)]
-      (doseq [f (ufile/file-names (umisc/inter-str "/" [save-directory  d]) (re-pattern channels-file))]
-        (doseq [c (channels-from-json (umisc/inter-str "/" [save-directory d f]))]
-          (log/trace "getting identity" d f c)
-          (try
-            ;; TODO: check that they don't already exist? and aren't errored?
-            (save-identity settings c (umisc/inter-str "/" [save-directory d (str c ".json")]))
-            (catch Exception e
-              (log/error e)))
-          )))))
+    (doseq [d (utils/directory-names save-directory)
+            f (ufile/file-names (umisc/inter-str "/" [save-directory  d]) (re-pattern channels-file))
+            c (channels-from-json (umisc/inter-str "/" [save-directory d f]))]
+      (log/trace "getting identity" d f c)
+      (try
+        ;; TODO: check that they don't already exist? and aren't errored?
+        (save-identity settings c (umisc/inter-str "/" [save-directory d (str c ".json")]))
+        (catch Exception e
+          (log/error e)))
+      )))
 
 
 (s/defn test-version*
@@ -265,11 +265,11 @@
 
   (log/info "wtf")
 
-
-  (s/with-fn-validation
-    (mount/start))
-
-  (mount/stop)
+  (do
+    (s/with-fn-validation
+      (mount/start))
+    (mount/stop)
+    )
 
   (s/explain FetchArgs)
   
