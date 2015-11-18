@@ -2,8 +2,18 @@
          :pw "test"
          :login "testes"
          :max-retries 5
+         :socket-timeout 120000
+         :conn-timeout 60000
          :retry-wait 5000
          }
+ :push {:base-url "http://anotherhubzilla"
+        :pw "test"
+        :login "testes"
+        :socket-timeout 120000
+        :conn-timeout 60000
+        :max-retries 5
+        :retry-wait 5000
+        }
  :storage {:save-directory "/mnt/sdcard/tmp/out"}
  :log {:spit-filename "/mnt/sdcard/tmp/web.log4j"
        :level :info}}

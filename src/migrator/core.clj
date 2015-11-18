@@ -1,6 +1,7 @@
 (ns migrator.core
   (:require [migrator.log :as mlog]
             [migrator.migrator :as m]
+            [migrator.push :as p]
             [schema.core :as s]
             [taoensso.timbre :as log]
             ;; [utilza.mmemdb :as memdb] not needed yet

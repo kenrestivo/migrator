@@ -1,4 +1,4 @@
-(ns dev
+(ns migrator.dev
   "Tools for interactive development with the REPL. This file should
   not be included in a production build of the application."
   ;; (:use [cljs.repl :only [repl]]

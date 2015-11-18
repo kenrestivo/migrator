@@ -2,6 +2,7 @@
   (:require  [schema.core :as s]
              [clojure.edn :as edn]
              [migrator.migrator :as m]
+             [migrator.utils :as utils]
              [mount :as mount]
              [migrator.log :as mlog]
              [taoensso.timbre :as log]))
@@ -15,11 +16,13 @@
 
 
 (def Settings
-  {(s/required-key :fetch) m/Fetch
-   (s/required-key :storage) m/Storage
+  {(s/required-key :fetch) utils/Serv
+   (s/required-key :push) utils/Serv
+   (s/required-key :storage) utils/Storage
    ;;; (s/required-key :db) Memdb not needed yet
    (s/required-key :log) mlog/Log
    })
+
 
 
 (defn read-and-validate
