@@ -44,8 +44,7 @@
                             :socket-timeout socket-timeout
                             :conn-timeout conn-timeout
                             :body (json/encode account)
-                            :as :json
-                            :query-params {}}
+                            :as :json}
                            (utils/trust-settings)))
        :body)))
 
@@ -62,14 +61,13 @@
    (-> url
        (client/post (merge {:basic-auth [login pw]
                             :throw-entire-message? true
-                            :headers {"Content-Type" "application/json"}
                             :socket-timeout socket-timeout
                             :conn-timeout conn-timeout
                             :retry-handler (utils/make-retry-fn retry-wait max-retries)
                             :multipart [{:name "Content/type" :content "application/json"}
+                                        {:name "Content-Transfer-Encoding" :content "binary"}
                                         {:name "filename" :content (clojure.java.io/file filepath)}]
-                            :as :json
-                            :query-params {}}
+                            :as :json}
                            (utils/trust-settings)))
        :body)))
 
