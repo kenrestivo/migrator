@@ -90,10 +90,11 @@
   [{:keys [storage push]} :- PushArgs]
   (let [{:keys [save-directory]} storage
         accounts (-> storage  utils/slurp-accounts emailify)]
-    (doseq [{:keys [dir channel]} (utils/walk-dir-channel (:save-directory storage))
-            :let [email (get accounts (Integer/parseInt dir))
-                  identity-path (umisc/inter-str "/" [save-directory dir channel utils/identity-file])]]
-      (log/info "Uploading channel for" email dir channel)
+    (doseq [account-id (keys accounts)
+            channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-id]))
+            :let [email (get accounts account-id)
+                  identity-path (umisc/inter-str "/" [save-directory account-id channel-hash utils/identity-file])]]
+      (log/info "Uploading channel for" email account-id channel-hash)
       (log/trace "from" identity-path)
       (utils/catcher
        (push-file push (utils/pathify push paths :identity email) email identity-path)))))
@@ -104,7 +105,7 @@
   [{:keys [storage push]} :- PushArgs]
   (let [{:keys [save-directory]} storage
         accounts (-> storage  utils/slurp-accounts emailify)]
-    (doseq [account-dir (utils/directory-names save-directory)
+    (doseq [account-dir (keys accounts)
             channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-dir]))
             year (utils/directory-names (umisc/inter-str "/" [save-directory account-dir channel-hash]))
             month  (utils/directory-names (umisc/inter-str "/" [save-directory account-dir channel-hash year]))
@@ -180,7 +181,7 @@
   (def running 
     (try 
       (s/with-fn-validation
-        (upload-items push))
+        (upload-channels push))
       (catch Exception e
         (log/error e))))
 
