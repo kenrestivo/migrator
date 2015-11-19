@@ -2,6 +2,7 @@
   (:require [cheshire.core :as json]
             [clojure.data :as data]
             [schema.core :as s]
+            [migrator.net :as net]
             [utilza.file :as ufile]
             [mount :as mount]
             [utilza.misc :as umisc]
@@ -80,6 +81,19 @@
       (log/info res))))
 
 
+(s/defn run-push
+  [{:keys [push storage] :as settings} :- PushArgs]
+  (try
+    (net/test-version push)
+    (doto settings
+      upload-accounts
+      ;;; TODO upload-channels
+      ;; TODO upload-files
+      )
+    (log/info "Completed run for" settings)
+    (catch Exception e
+      (log/error e "Run failed to complete"))))
+
 
 
 (s/defn setup-push
@@ -100,6 +114,7 @@
 
 
 
+
 (mount/defstate push
   :start (setup-push (select-keys (mount/args) [:push :storage]))
   :stop (stop-push))
@@ -111,16 +126,6 @@
   (s/with-fn-validation
     (upload-accounts push)
     )
-
-
-
-  (require '[utilza.repl :as urepl])
-
-  (->> (str (-> push :storage :save-directory) "/" utils/accounts-file)
-       ujson/slurp-json
-       (urepl/massive-spew  "/tmp/foo.edn"))
-  
-  
 
   
   )

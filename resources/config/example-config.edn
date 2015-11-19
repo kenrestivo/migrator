@@ -3,14 +3,14 @@
          :login "testes"
          :max-retries 5
          :socket-timeout 120000
-         :conn-timeout 60000
+         :conn-timeout 20000
          :retry-wait 5000
          }
  :push {:base-url "http://anotherhubzilla"
         :pw "test"
         :login "testes"
         :socket-timeout 120000
-        :conn-timeout 60000
+        :conn-timeout 20000
         :max-retries 5
         :retry-wait 5000
         }

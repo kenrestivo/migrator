@@ -13,7 +13,12 @@
 (def channels-file "channels.json")
 (def identity-file  "identity.json")
 
-(def min-supported-plugin-version 3)
+
+(def min-supported-versions {:hubzilla 1221
+                             :redmatrix 9999
+                             :plugin 3})
+
+
 
 ;;; TODO: move to utilza
 (defn directory-names
@@ -106,7 +111,10 @@
    paths :- {s/Keyword s/Str}
    path-type :- s/Keyword
    & args]
-  (apply format (concat [(paths path-type) base-url] (map h/url-encode args))))
+  (let [munged-args (concat [(paths path-type) base-url] (map h/url-encode args))]
+    (doseq [a munged-args] ;;; XXX hack
+      (log/trace a))
+    (apply format munged-args)))
 
 
 
@@ -117,6 +125,14 @@
       (str "/" accounts-file) 
       ujson/slurp-json 
       :users))
+
+
+(s/defn clean-platform
+  [platform :- s/Str]
+  (->> platform 
+       (re-matches #".+?\.(\d+).*?$" )
+       second
+       Integer/parseInt))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
