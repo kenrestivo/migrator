@@ -1,7 +1,9 @@
 (ns migrator.utils
   (:require [schema.core :as s]
             [taoensso.timbre :as log]
+            [utilza.misc :as umisc]
             [hiccup.util :as h]
+            [utilza.file :as ufile]
             [utilza.json :as ujson]
             [clojure.java.io :as jio])
   (:import java.io.File
@@ -12,6 +14,7 @@
 (def accounts-file "accounts.json")
 (def channels-file "channels.json")
 (def identity-file  "identity.json")
+(def items-file  "items.json")
 
 
 (def min-supported-versions {:hubzilla 1221
@@ -134,6 +137,22 @@
        second
        Integer/parseInt))
 
+
+(defn channels-from-json
+  [filename]
+  (log/trace "Reading channels file for channels" filename)
+  (->> filename
+       ujson/slurp-json
+       :channel_hashes
+       (map :channel_hash)))
+
+(s/defn walk-dir-channel
+  [save-directory]
+  (for [d (directory-names save-directory)
+        f (ufile/file-names (umisc/inter-str "/" [save-directory  d]) (re-pattern channels-file))
+        c (channels-from-json (umisc/inter-str "/" [save-directory d f]))]
+    {:dir d
+     :channel c}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (comment

@@ -80,6 +80,45 @@
     (let [res (pusher push (utils/pathify push paths :account) account)]
       (log/info res))))
 
+(s/defn emailify
+  [accounts :- [{s/Keyword s/Any}]]
+  (reduce #(assoc %1 (-> %2 :account_id Integer/parseInt) (:account_email %2)) 
+          {} accounts))
+
+
+(s/defn upload-channels
+  [{:keys [storage push]} :- PushArgs]
+  (let [{:keys [save-directory]} storage
+        accounts (-> storage  utils/slurp-accounts emailify)]
+    (doseq [{:keys [dir channel]} (utils/walk-dir-channel (:save-directory storage))
+            :let [email (get accounts (Integer/parseInt dir))
+                  identity-path (umisc/inter-str "/" [save-directory dir channel utils/identity-file])]]
+      (log/info "Uploading channel for" email dir channel)
+      (log/trace "from" identity-path)
+      (utils/catcher
+       (push-file push (utils/pathify push paths :identity email) email identity-path)))))
+
+
+
+(s/defn upload-items
+  [{:keys [storage push]} :- PushArgs]
+  (let [{:keys [save-directory]} storage
+        accounts (-> storage  utils/slurp-accounts emailify)]
+    (doseq [account-dir (utils/directory-names save-directory)
+            channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-dir]))
+            year (utils/directory-names (umisc/inter-str "/" [save-directory account-dir channel-hash]))
+            month  (utils/directory-names (umisc/inter-str "/" [save-directory account-dir channel-hash year]))
+            :let [email (get accounts (Integer/parseInt account-dir))
+                  f (umisc/inter-str "/" 
+                                     [save-directory account-dir channel-hash 
+                                      year month utils/items-file])]]
+      (log/info "Uploading items for" email channel-hash year month)
+      (log/trace email f)
+      (utils/catcher
+       (push-file push (utils/pathify push paths :identity email) email f))
+      )))
+
+
 
 (s/defn run-push
   [{:keys [push storage] :as settings} :- PushArgs]
@@ -87,8 +126,8 @@
     (net/test-version push)
     (doto settings
       upload-accounts
-      ;;; TODO upload-channels
-      ;; TODO upload-files
+      upload-channels
+      upload-items
       )
     (log/info "Completed run for" settings)
     (catch Exception e
@@ -123,9 +162,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (comment
 
-  (s/with-fn-validation
-    (upload-accounts push)
-    )
+  
+  (def running
+    (future (try 
+              (s/with-fn-validation
+                (run-push push))
+              (catch Exception e
+                (log/error e)))))
+
+  
+  (future-done? running)
+
+  (future-cancel running)
+
+
+
+  (def running 
+    (try 
+      (s/with-fn-validation
+        (upload-items push))
+      (catch Exception e
+        (log/error e))))
+
+
+
+  (require '[utilza.repl :as urepl])
+
+  (->> (str (-> push :storage :save-directory) "/" utils/accounts-file)
+       ujson/slurp-json
+       (urepl/massive-spew  "/tmp/foo.edn"))
 
   
   )

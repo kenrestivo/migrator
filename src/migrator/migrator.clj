@@ -55,14 +55,6 @@
 
 
 
-(defn channels-from-json
-  [filename]
-  (log/trace "Reading channels file for channels" filename)
-  (->> filename
-       ujson/slurp-json
-       :channel_hashes
-       (map :channel_hash)))
-
 
 
 
@@ -87,20 +79,14 @@
           split-year-month))
 
 
-(s/defn walk-dir-channel
-  [save-directory]
-  (for [d (utils/directory-names save-directory)
-        f (ufile/file-names (umisc/inter-str "/" [save-directory  d]) (re-pattern utils/channels-file))
-        c (channels-from-json (umisc/inter-str "/" [save-directory d f]))]
-    {:dir d
-     :channel c}))
+
 
 
 (s/defn get-identities
   "This is the core of the fetcher"
   [{:keys [fetch storage] :as settings} :- net/FetchArgs]
   (let [{:keys [save-directory]} storage]
-    (doseq [{:keys [dir channel]} (walk-dir-channel save-directory)
+    (doseq [{:keys [dir channel]} (utils/walk-dir-channel save-directory)
             :let [identity-path (umisc/inter-str "/" [save-directory dir channel utils/identity-file])]]
       (log/info "Getting identity for account" dir ": " channel)
       (try
@@ -120,7 +106,7 @@
       (doseq [{:keys [year month]} (utils/intervening-year-months year month)
               :let [item-path (umisc/inter-str "/" 
                                                [save-directory acct-dir channel-hash 
-                                                year month "items.json"])]]
+                                                year month utils/items-file])]]
         (try
           (save-wrap fetch item-path :items channel-hash year month)
           (catch Exception e
@@ -129,7 +115,7 @@
 
 (s/defn get-items
   [{:keys [fetch storage] :as settings} :- net/FetchArgs]
-  (doseq [{:keys [dir channel]} (walk-dir-channel (:save-directory storage))]
+  (doseq [{:keys [dir channel]} (utils/walk-dir-channel (:save-directory storage))]
     (log/info "Getting items for" dir channel)
     (try 
       (get-channel-items settings dir channel)
