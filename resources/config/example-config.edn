@@ -1,7 +1,7 @@
 {:fetch {:base-url "http://hubzilla"
          :pw "test"
          :login "testes"
-         :max-retries 5
+         :max-retries 10
          :socket-timeout 120000
          :conn-timeout 20000
          :retry-wait 5000
@@ -11,7 +11,7 @@
         :login "testes"
         :socket-timeout 120000
         :conn-timeout 20000
-        :max-retries 5
+        :max-retries 20
         :retry-wait 5000
         }
  :storage {:save-directory "/mnt/sdcard/tmp/out"}
