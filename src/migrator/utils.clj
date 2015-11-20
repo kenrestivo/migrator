@@ -19,7 +19,7 @@
 
 (def min-supported-versions {:hubzilla 1221
                              :redmatrix 9999
-                             :plugin 3})
+                             :plugin 4})
 
 
 

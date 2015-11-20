@@ -22,7 +22,8 @@
 (def paths
   {:account "%s/migrator/import/account"
    :identity "%s/migrator/import/identity/%s"
-   :items  "%s/migrator/import/items/%s/%d/%d"
+   :items  "%s/migrator/import/items/%s"
+   :directory  "%s/migrator/import/directory/%s"
    :version "%s/migrator/version"})
 
 
@@ -36,6 +37,7 @@
    url :- s/Str
    account :- {s/Keyword s/Any}]
   (log/trace "pusher: pushing" url)
+  ;; TODO: retry on 404! hubzilla chokes with 404 when mysql error
   (utils/catcher
    (-> url
        (client/post (merge {:basic-auth [login pw]
@@ -51,13 +53,13 @@
 
 
 ;; XXX duplicate/boilerplate, TODO combine with pusher
-(s/defn push-file
+(s/defn push-multipart
   "POSTs URL with basic auth"
   [{:keys [retry-wait max-retries login pw socket-timeout conn-timeout]} :- utils/Serv
    url :- s/Str
-   email :- s/Str
    filepath :- s/Str]
   (log/trace "pusher: pushing multipart" url)
+  ;; TODO: retry on 404! hubzilla chokes on 404 when mysql error
   (utils/catcher
    (-> url
        (client/post (merge {:basic-auth [login pw]
@@ -97,27 +99,40 @@
       (log/info "Uploading channel for" email account-id channel-hash)
       (log/trace "from" identity-path)
       (utils/catcher
-       (push-file push (utils/pathify push paths :identity email) email identity-path)))))
+       (let [res (push-multipart push (utils/pathify push paths :identity email) identity-path)]
+         (log/info res))))))
 
+
+(s/defn update-directory
+  [{:keys [storage push]} :- PushArgs]
+  (let [{:keys [save-directory]} storage
+        accounts (-> storage  utils/slurp-accounts emailify)]
+    (doseq [account-id (keys accounts)
+            channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-id]))]
+      (log/info "Updating dir for" account-id channel-hash)
+      (utils/catcher
+       (let [res (net/fetcher push (utils/pathify push paths :directory channel-hash))]
+         (log/info res))))))
 
 
 (s/defn upload-items
   [{:keys [storage push]} :- PushArgs]
   (let [{:keys [save-directory]} storage
         accounts (-> storage  utils/slurp-accounts emailify)]
-    (doseq [account-dir (keys accounts)
-            channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-dir]))
-            year (utils/directory-names (umisc/inter-str "/" [save-directory account-dir channel-hash]))
-            month  (utils/directory-names (umisc/inter-str "/" [save-directory account-dir channel-hash year]))
-            :let [email (get accounts (Integer/parseInt account-dir))
+    (doseq [account-id (keys accounts)
+            channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-id]))
+            year (utils/directory-names (umisc/inter-str "/" [save-directory account-id channel-hash]))
+            month  (utils/directory-names (umisc/inter-str "/" [save-directory account-id channel-hash year]))
+            :let [email (get accounts account-id)
                   f (umisc/inter-str "/" 
-                                     [save-directory account-dir channel-hash 
+                                     [save-directory account-id channel-hash 
                                       year month utils/items-file])]]
-      (log/info "Uploading items for" email channel-hash year month)
+      (log/info "Uploading items for" email account-id year month channel-hash)
       (log/trace email f)
       (utils/catcher
-       (push-file push (utils/pathify push paths :identity email) email f))
-      )))
+       (let [res (push-multipart push (utils/pathify push paths :items channel-hash) f)]
+         (log/info res)
+         )))))
 
 
 
@@ -129,6 +144,7 @@
       upload-accounts
       upload-channels
       upload-items
+      update-directory
       )
     (log/info "Completed run for" settings)
     (catch Exception e
@@ -165,11 +181,9 @@
 
   
   (def running
-    (future (try 
-              (s/with-fn-validation
-                (run-push push))
-              (catch Exception e
-                (log/error e)))))
+    (future (utils/catcher
+             (s/with-fn-validation
+               (run-push push)))))
 
   
   (future-done? running)
@@ -179,13 +193,23 @@
 
 
   (def running 
-    (try 
-      (s/with-fn-validation
-        (upload-channels push))
-      (catch Exception e
-        (log/error e))))
+    (future
+      (utils/catcher
+       (s/with-fn-validation
+         (upload-channels push)))))
+
+  (def running 
+    (future
+      (utils/catcher
+       (s/with-fn-validation
+         (upload-accounts push)))))
 
 
+  (def running 
+    (future
+      (utils/catcher
+       (s/with-fn-validation
+         (upload-items push)))))
 
   (require '[utilza.repl :as urepl])
 
@@ -193,5 +217,10 @@
        ujson/slurp-json
        (urepl/massive-spew  "/tmp/foo.edn"))
 
-  
+
+
+
+  (log/info "foo")
+
+
   )
