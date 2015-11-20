@@ -102,6 +102,7 @@
                                                       utils/identity-file])]]
       (log/info "Uploading channel for" email account-id channel-hash)
       (log/trace "from" identity-path)
+      ;; XXX TODO: for some reason, this does not log.
       (let [res (utils/bruce-wrap (utils/bruceify push)
                                   (push-multipart push 
                                                   (utils/pathify push paths :identity email) 
