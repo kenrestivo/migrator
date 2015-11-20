@@ -201,6 +201,12 @@
 
   (future-cancel running)
 
+  (def running 
+    (future
+      (utils/catcher
+       (s/with-fn-validation
+         (upload-accounts push)))))
+
 
 
   (def running 
@@ -208,12 +214,6 @@
       (utils/catcher
        (s/with-fn-validation
          (upload-channels push)))))
-
-  (def running 
-    (future
-      (utils/catcher
-       (s/with-fn-validation
-         (upload-accounts push)))))
 
 
   (def running 
@@ -235,5 +235,8 @@
        ujson/slurp-json
        (urepl/massive-spew  "/tmp/foo.edn"))
 
+
   )
+
+
 
