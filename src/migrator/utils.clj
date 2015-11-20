@@ -18,7 +18,7 @@
 (def items-file  "items.json")
 
 
-(def min-supported-versions {:hubzilla 1222
+(def min-supported-versions {:hubzilla 1223
                              :redmatrix 9999
                              :plugin 5})
 
