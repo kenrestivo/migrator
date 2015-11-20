@@ -155,7 +155,7 @@
       upload-accounts
       upload-channels
       upload-items
-      ;; update-directory ;; XXX crashes mysql
+      update-directory 
       )
     (log/info "Completed run for" settings)
     (catch Exception e
