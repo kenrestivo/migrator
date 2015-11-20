@@ -3,6 +3,7 @@
             [clojure.data :as data]
             [schema.core :as s]
             [migrator.net :as net]
+            [robert.bruce :as bruce]
             [utilza.file :as ufile]
             [mount :as mount]
             [utilza.misc :as umisc]
@@ -37,19 +38,17 @@
    url :- s/Str
    account :- {s/Keyword s/Any}]
   (log/trace "pusher: pushing" url)
-  ;; TODO: retry on 404! hubzilla chokes with 404 when mysql error
-  (utils/catcher
-   (-> url
-       (client/post (merge {:basic-auth [login pw]
-                            :throw-entire-message? true
-                            :headers {"Content-Type" "application/json"}
-                            :retry-handler (utils/make-retry-fn retry-wait max-retries)
-                            :socket-timeout socket-timeout
-                            :conn-timeout conn-timeout
-                            :body (json/encode account)
-                            :as :json}
-                           (utils/trust-settings)))
-       :body)))
+  (-> url
+      (client/post (merge {:basic-auth [login pw]
+                           :throw-entire-message? true
+                           :headers {"Content-Type" "application/json"}
+                           :retry-handler (utils/make-retry-fn retry-wait max-retries)
+                           :socket-timeout socket-timeout
+                           :conn-timeout conn-timeout
+                           :body (json/encode account)
+                           :as :json}
+                          (utils/trust-settings)))
+      :body))
 
 
 ;; XXX duplicate/boilerplate, TODO combine with pusher
@@ -59,28 +58,29 @@
    url :- s/Str
    filepath :- s/Str]
   (log/trace "pusher: pushing multipart" url)
-  ;; TODO: retry on 404! hubzilla chokes on 404 when mysql error
-  (utils/catcher
-   (-> url
-       (client/post (merge {:basic-auth [login pw]
-                            :throw-entire-message? true
-                            :socket-timeout socket-timeout
-                            :conn-timeout conn-timeout
-                            :retry-handler (utils/make-retry-fn retry-wait max-retries)
-                            :multipart [{:name "Content/type" :content "application/json"}
-                                        {:name "Content-Transfer-Encoding" :content "binary"}
-                                        {:name "filename" :content (clojure.java.io/file filepath)}]
-                            :as :json}
-                           (utils/trust-settings)))
-       :body)))
+  (-> url
+      (client/post (merge {:basic-auth [login pw]
+                           :throw-entire-message? true
+                           :socket-timeout socket-timeout
+                           :conn-timeout conn-timeout
+                           :retry-handler (utils/make-retry-fn retry-wait max-retries)
+                           :multipart [{:name "Content/type" :content "application/json"}
+                                       {:name "Content-Transfer-Encoding" :content "binary"}
+                                       {:name "filename" :content (clojure.java.io/file filepath)}]
+                           :as :json}
+                          (utils/trust-settings)))
+      :body))
 
 
 (s/defn upload-accounts
   [{:keys [storage push]} :- PushArgs]
   (doseq [account (utils/slurp-accounts storage)]
     (log/info "uploading acccount for" (:account_email account))
-    (let [res (pusher push (utils/pathify push paths :account) account)]
+    (let [res (utils/bruce-wrap (utils/bruceify push)
+                                (pusher push (utils/pathify push paths :account) account))]
       (log/info res))))
+
+
 
 (s/defn emailify
   [accounts :- [{s/Keyword s/Any}]]
@@ -91,35 +91,44 @@
 (s/defn upload-channels
   [{:keys [storage push]} :- PushArgs]
   (let [{:keys [save-directory]} storage
+        {:keys [retry-wait]} push
         accounts (-> storage  utils/slurp-accounts emailify)]
-    (doseq [account-id (keys accounts)
+    (doseq [account-id (-> accounts keys shuffle)
             channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-id]))
             :let [email (get accounts account-id)
-                  identity-path (umisc/inter-str "/" [save-directory account-id channel-hash utils/identity-file])]]
+                  identity-path (umisc/inter-str "/" [save-directory 
+                                                      account-id 
+                                                      channel-hash
+                                                      utils/identity-file])]]
       (log/info "Uploading channel for" email account-id channel-hash)
       (log/trace "from" identity-path)
-      (utils/catcher
-       (let [res (push-multipart push (utils/pathify push paths :identity email) identity-path)]
-         (log/info res))))))
+      (let [res (utils/bruce-wrap (utils/bruceify push)
+                                  (push-multipart push 
+                                                  (utils/pathify push paths :identity email) 
+                                                  identity-path))]
+        (log/info res)
+        (Thread/sleep retry-wait)))))
 
 
 (s/defn update-directory
   [{:keys [storage push]} :- PushArgs]
   (let [{:keys [save-directory]} storage
         accounts (-> storage  utils/slurp-accounts emailify)]
-    (doseq [account-id (keys accounts)
+    (doseq [account-id (-> accounts keys shuffle)
             channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-id]))]
       (log/info "Updating dir for" account-id channel-hash)
-      (utils/catcher
-       (let [res (net/fetcher push (utils/pathify push paths :directory channel-hash))]
-         (log/info res))))))
+      (let [res (utils/bruce-wrap (utils/bruceify push)
+                                  (net/fetcher push (utils/pathify push paths :directory channel-hash)))]
+        (log/info res)
+        (Thread/sleep (:retry-wait push))))))
 
 
 (s/defn upload-items
   [{:keys [storage push]} :- PushArgs]
   (let [{:keys [save-directory]} storage
+        {:keys [retry-wait]} push
         accounts (-> storage  utils/slurp-accounts emailify)]
-    (doseq [account-id (keys accounts)
+    (doseq [account-id (-> accounts keys shuffle)
             channel-hash (utils/directory-names (umisc/inter-str "/" [save-directory account-id]))
             year (utils/directory-names (umisc/inter-str "/" [save-directory account-id channel-hash]))
             month  (utils/directory-names (umisc/inter-str "/" [save-directory account-id channel-hash year]))
@@ -129,10 +138,11 @@
                                       year month utils/items-file])]]
       (log/info "Uploading items for" email account-id year month channel-hash)
       (log/trace email f)
-      (utils/catcher
-       (let [res (push-multipart push (utils/pathify push paths :items channel-hash) f)]
-         (log/info res)
-         )))))
+      (let [res (utils/bruce-wrap (utils/bruceify push)
+                                  (push-multipart push (utils/pathify push paths :items channel-hash) f))]
+        (log/info res)
+        (Thread/sleep retry-wait)
+        ))))
 
 
 
@@ -144,7 +154,7 @@
       upload-accounts
       upload-channels
       upload-items
-      update-directory
+      ;; update-directory ;; XXX crashes mysql
       )
     (log/info "Completed run for" settings)
     (catch Exception e
@@ -211,16 +221,18 @@
        (s/with-fn-validation
          (upload-items push)))))
 
+  (def running 
+    (future
+      (utils/catcher
+       (s/with-fn-validation
+         (update-directory push)))))
+
+
   (require '[utilza.repl :as urepl])
 
   (->> (str (-> push :storage :save-directory) "/" utils/accounts-file)
        ujson/slurp-json
        (urepl/massive-spew  "/tmp/foo.edn"))
 
-
-
-
-  (log/info "foo")
-
-
   )
+

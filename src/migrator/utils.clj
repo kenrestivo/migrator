@@ -1,6 +1,7 @@
 (ns migrator.utils
   (:require [schema.core :as s]
             [taoensso.timbre :as log]
+            [robert.bruce :as bruce]
             [utilza.misc :as umisc]
             [hiccup.util :as h]
             [utilza.file :as ufile]
@@ -153,6 +154,35 @@
         c (channels-from-json (umisc/inter-str "/" [save-directory d f]))]
     {:dir d
      :channel c}))
+
+
+
+
+(s/defn bruceify
+  [{:keys [max-retries retry-wait]} :- Serv]
+  {:decay :double 
+   :tries max-retries 
+   :sleep retry-wait
+   :error-hook #(log/debug (.getMessage %))})
+
+
+(defmacro bruce-wrap
+  [options body]
+  `(try
+     (bruce/try-try-again ~options
+                          (fn [] 
+                            ~body))
+     (catch Exception e#
+       (log/error e#))))
+
+
+(defn un-404
+  [e] 
+  (log/debug (.getMessage e))
+  (if (= 404 (some-> e .data :status))
+    false ;; don't retry
+    nil)) ;; retry as normal
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (comment

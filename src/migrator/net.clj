@@ -30,14 +30,13 @@
   [{:keys [retry-wait max-retries login pw]} :- utils/Serv
    url :- s/Str]
   (log/trace "fetcher: fetching" url)
-  (utils/catcher
-   (-> url
-       (client/get (merge {:basic-auth [login pw]
-                           :throw-entire-message? true
-                           :retry-handler (utils/make-retry-fn retry-wait max-retries)
-                           :query-params {}} 
-                          (utils/trust-settings)))
-       :body)))
+  (-> url
+      (client/get (merge {:basic-auth [login pw]
+                          :throw-entire-message? true
+                          :retry-handler (utils/make-retry-fn retry-wait max-retries)
+                          :query-params {}} 
+                         (utils/trust-settings)))
+      :body))
 
 
 
@@ -47,10 +46,11 @@
   ;; TODO: check for incorrect plugin path, maybe by testing the WRONG path to see if it succeeds?
   (log/info "Testing to make sure your migrator plugin version is supported")
   (let [{:keys [platform platform_version migrator_version] :as v} 
-        (-> fetch
-            (fetcher 
-             (utils/pathify fetch paths :version))
-            (json/decode true))
+        (utils/catcher 
+         (-> fetch
+             (fetcher 
+              (utils/pathify fetch paths :version))
+             (json/decode true)))
         {:keys [hubzilla redmatrix plugin]} utils/min-supported-versions
         cleaned-platform (utils/clean-platform platform_version)]
     (log/trace "test-version got" v)
@@ -62,14 +62,14 @@
                migrator_version
                plugin))))
     (case platform
-      "hubzilla" (when (> cleaned-platform hubzilla)
+      "hubzilla" (when (< cleaned-platform hubzilla)
                    (throw (Exception. 
                            (format
                             "Server on %s has hubzilla version %d which is too old. Upgrade it to %d or higher."
                             base-url
                             platform_version
                             hubzilla))))
-      "redmatrix" (when (> cleaned-platform redmatrix)
+      "redmatrix" (when (< cleaned-platform redmatrix)
                     (throw (Exception. 
                             (format
                              "Server on %s has redmatrix version %d which is too old. Upgrade it to %d or higher."
@@ -89,6 +89,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (comment
+
 
 
 

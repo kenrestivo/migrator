@@ -11,6 +11,7 @@
                  [com.taoensso/timbre "4.1.2"]
                  [prismatic/schema "1.0.3"]
                  [utilza "0.1.80"]
+                 [robert/bruce "0.8.0"]
                  [com.taoensso/nippy "2.10.0"]
                  [hiccup "1.0.0"]
                  [clj-http "2.0.0"]

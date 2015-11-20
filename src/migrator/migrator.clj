@@ -49,11 +49,8 @@
                 dir (umisc/inter-str "/" [save-directory account_id])
                 aid (Integer/parseInt account_id)]]
     (log/debug "getting channels for" aid)
-    ;; TODO: check the table
-    (utils/catcher
-     (save-wrap fetch (umisc/inter-str "/" [dir utils/channels-file]) :channels aid))))
-
-
+    (utils/bruce-wrap (assoc (utils/bruceify fetch) :error-hook utils/un-404)
+                      (save-wrap fetch (umisc/inter-str "/" [dir utils/channels-file]) :channels aid))))
 
 
 
@@ -71,15 +68,12 @@
   [settings :- utils/Serv
    channel-hash :- s/Str]
   (log/debug "Checking first post date for" channel-hash)
-  ;; TODO: 404 is totally OK here, trap that, don't log it as error, it's not really exceptional
-  (some-> settings
-          (net/fetcher (utils/pathify settings paths :first-post channel-hash))
-          (json/decode true)
-          :date
-          split-year-month))
-
-
-
+  (utils/bruce-wrap (assoc (utils/bruceify settings) :error-hook utils/un-404)
+                    (some-> settings
+                            (net/fetcher (utils/pathify settings paths :first-post channel-hash))
+                            (json/decode true)
+                            :date
+                            split-year-month)))
 
 
 (s/defn get-identities
@@ -89,10 +83,9 @@
     (doseq [{:keys [dir channel]} (utils/walk-dir-channel save-directory)
             :let [identity-path (umisc/inter-str "/" [save-directory dir channel utils/identity-file])]]
       (log/info "Getting identity for account" dir ": " channel)
-      (try
-        (save-wrap fetch identity-path :identity channel)
-        (catch Exception e
-          (log/error e))))))
+      (utils/bruce-wrap (utils/bruceify fetch)
+                        (save-wrap fetch identity-path :identity channel)))))
+
 
 
 (s/defn get-channel-items
@@ -107,27 +100,27 @@
               :let [item-path (umisc/inter-str "/" 
                                                [save-directory acct-dir channel-hash 
                                                 year month utils/items-file])]]
-        (try
-          (save-wrap fetch item-path :items channel-hash year month)
-          (catch Exception e
-            (log/error e)))))))
+        (utils/bruce-wrap (assoc (utils/bruceify fetch) :error-hook utils/un-404)
+                          (save-wrap fetch item-path :items channel-hash year month))))))
+
 
 
 (s/defn get-items
   [{:keys [fetch storage] :as settings} :- net/FetchArgs]
-  (doseq [{:keys [dir channel]} (utils/walk-dir-channel (:save-directory storage))]
-    (log/info "Getting items for" dir channel)
-    (try 
-      (get-channel-items settings dir channel)
-      (catch Exception e
-        (log/error e)))))
+  (let [{:keys [retry-wait max-retries]} fetch]
+    (doseq [{:keys [dir channel]} (utils/walk-dir-channel (:save-directory storage))]
+      (log/info "Getting items for" dir channel)
+      (get-channel-items settings dir channel))))
+
 
 
 
 (s/defn get-accounts
   [{:keys [fetch storage] :as settings} :- net/FetchArgs]
-  (let [{:keys [save-directory]} storage]
+  (let [{:keys [save-directory]} storage
+        {:keys [retry-wait max-retries]} fetch]
     (save-wrap fetch (umisc/inter-str "/" [save-directory utils/accounts-file]) :users)))
+
 
 (s/defn run-fetch
   [{:keys [fetch storage] :as settings} :- net/FetchArgs]
