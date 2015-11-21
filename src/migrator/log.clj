@@ -1,10 +1,18 @@
 (ns migrator.log
   (:require [mount.core :as mount]
             [taoensso.timbre :as log]
+            [clojure.walk :as walk]
             [utilza.java :as ujava]
             [schema.core :as s]
             [clojure.tools.trace :as trace]
             [taoensso.timbre.appenders.core :as appenders]))
+
+(defn unpassword
+  [m]
+  (walk/postwalk  #(if (and (map? %) (:pw %))
+                     (assoc % :pw "[REDACTED]")
+                     %)
+                  m))
 
 
 (def Log
@@ -25,7 +33,7 @@
                                                    (fn [name value]
                                                      (log/debug name value))))
     (log/info "Welcome to Migrator" (ujava/revision-info "migrator" "migrator"))
-    (log/info "logging started" config)
+    (log/info "logging started" (unpassword config))
     log)) ;; so it gets into the state
 
 
@@ -41,5 +49,10 @@
 
   (log/error (Exception. "foobar"))
   (println (.getCause *e))
+
+
+
+
+
 
   )
