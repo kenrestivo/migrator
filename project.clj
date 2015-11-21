@@ -20,8 +20,6 @@
                  ]
   :main migrator.core
   :uberjar-name "migrator.jar"
-  :profiles {:repl {:timeout 180000
-                    :injections [(do
-                                   (require 'migrator.core)
-                                   (migrator.core/-main))]}}
+  :profiles {:repl {:timeout 180000}}
+
   )
