@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [cheshire "5.5.0"]
                  [clj-time "0.11.0"]
-                 [org.clojure/core.async "0.2.374"]
+                 [org.clojure/core.async "0.2.374" :exclusions [org.clojure/tools.reader]]
                  [mount "0.1.3"]
                  [com.taoensso/timbre "4.1.4"]
                  [prismatic/schema "1.0.3"]
