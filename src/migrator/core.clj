@@ -11,6 +11,10 @@
   (:gen-class))
 
 
+(defn run-all
+  []
+  (m/run-fetch)
+  (p/run-push))
 
 
 (defn -main
@@ -19,6 +23,7 @@
     (let [conf-file (or conf-file-arg "config.edn")]
       (println "Starting components" conf-file)
       (mount/start-with-args (conf/read-and-validate conf-file)))
+    (run-all)
     (catch Exception e
       (println (.getMessage e))
       (println (.getCause e)))))
