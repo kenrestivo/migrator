@@ -1,20 +1,13 @@
 (ns migrator.migrator
   (:require [cheshire.core :as json]
-            [clojure.data :as data]
-            [utilza.file :as ufile]
-            [mount.core :as mount]
+            [clojure.java.io :as jio]
             [migrator.net :as net]
-            [utilza.misc :as umisc]
-            [utilza.json :as ujson]
-            [clojure.java.io :as jio]
-            [schema.core :as s]
-            ;; [utilza.mmemdb :as memdb] ;; not really needed yet
-            [taoensso.nippy :as nippy]
-            [clj-http.client :as client]
             [migrator.utils :as utils]
-            [clojure.java.io :as jio]
+            [mount.core :as mount]
+            [robert.bruce :as bruce]
+            [schema.core :as s]
             [taoensso.timbre :as log]
-            [utilza.repl :as urepl]))
+            [utilza.misc :as umisc]))
 
 
 
@@ -131,7 +124,7 @@
       get-channels
       get-identities
       get-items)
-    (log/info "Completed run for" settings)
+    (log/info "Completed run for" (utils/redact settings))
     (catch Exception e
       (log/error e "Run failed to complete"))))
 

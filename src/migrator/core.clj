@@ -1,20 +1,17 @@
 (ns migrator.core
-  (:require [migrator.log :as mlog]
+  (:require [migrator.conf :as conf]
             [migrator.migrator :as m]
             [migrator.push :as p]
-            [schema.core :as s]
-            [taoensso.timbre :as log]
-            ;; [utilza.mmemdb :as memdb] not needed yet
             [mount.core :as mount]
-            [migrator.conf :as conf]
-            )
+            [taoensso.timbre :as log])
   (:gen-class))
 
 
 (defn run-all
   []
-  (m/run-fetch)
-  (p/run-push))
+  (m/run-fetch m/fetch)
+  (p/run-push p/push)
+  (log/info "Migration complete! Check for errors."))
 
 
 (defn -main
@@ -72,5 +69,18 @@
   (conf/read-and-validate "config.edn")
 
   
+  (def running
+    (future (try 
+              (s/with-fn-validation
+                (run-all))
+              (catch Exception e
+                (log/error e)))))
+
+  
+  (future-done? running)
+
+  (future-cancel running)
+  
+
 
   )

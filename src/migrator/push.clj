@@ -1,22 +1,13 @@
 (ns migrator.push
   (:require [cheshire.core :as json]
-            [clojure.data :as data]
-            [schema.core :as s]
-            [migrator.net :as net]
-            [robert.bruce :as bruce]
-            [utilza.file :as ufile]
-            [mount.core :as mount]
-            [utilza.misc :as umisc]
-            [utilza.json :as ujson]
-            [clojure.java.io :as jio]
-            [schema.core :as s]
-            ;; [utilza.mmemdb :as memdb] ;; not really needed yet
-            [taoensso.nippy :as nippy]
             [clj-http.client :as client]
+            [migrator.net :as net]
             [migrator.utils :as utils]
-            [clojure.java.io :as jio]
+            [mount.core :as mount]
+            [robert.bruce :as bruce]
+            [schema.core :as s]
             [taoensso.timbre :as log]
-            [utilza.repl :as urepl]))
+            [utilza.misc :as umisc]))
 
 
 
@@ -67,7 +58,7 @@
                            :multipart (cond-> [{:name "Content/type" :content "application/json"}
                                                {:name "Content-Transfer-Encoding" :content "binary"}
                                                {:name "filename" :content (clojure.java.io/file filepath)}]
-                                             seize (conj {:name "make_primary" :content (str seize)}))
+                                              seize (conj {:name "make_primary" :content (str seize)}))
                            :as :json}
                           (utils/trust-settings)))
       :body))
@@ -108,8 +99,8 @@
                                   (push-multipart push 
                                                   (utils/pathify push paths :identity email) 
                                                   identity-path))]
-        (log/info res)
-        (Thread/sleep retry-wait)))))
+        (log/info res))
+      (Thread/sleep retry-wait))))
 
 
 (s/defn update-directory
@@ -121,8 +112,8 @@
       (log/info "Updating dir for" account-id channel-hash)
       (let [res (utils/bruce-wrap (utils/bruceify push)
                                   (net/fetcher push (utils/pathify push paths :directory channel-hash)))]
-        (log/info res)
-        (Thread/sleep (:retry-wait push))))))
+        (log/info res))
+      (Thread/sleep (:retry-wait push)))))
 
 
 (s/defn upload-items
@@ -158,7 +149,7 @@
       upload-items
       update-directory 
       )
-    (log/info "Completed run for" settings)
+    (log/info "Completed run for" (utils/redact settings))
     (catch Exception e
       (log/error e "Run failed to complete"))))
 

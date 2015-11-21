@@ -1,14 +1,14 @@
 (ns migrator.utils
-  (:require [schema.core :as s]
-            [taoensso.timbre :as log]
-            [robert.bruce :as bruce]
-            [utilza.misc :as umisc]
+  (:require [clojure.java.io :as jio]
+            [clojure.walk :as walk]
             [hiccup.util :as h]
+            [schema.core :as s]
+            [taoensso.timbre :as log]
             [utilza.file :as ufile]
             [utilza.json :as ujson]
-            [clojure.java.io :as jio])
-  (:import java.io.File
-           org.joda.time.DateTime))
+            [utilza.misc :as umisc])
+  (:import (java.io File)
+           (org.joda.time DateTime)))
 
 
 ;; TODO: move to conf file? somewhere?
@@ -19,8 +19,8 @@
 
 
 (def min-supported-versions {:hubzilla 1223
-                             :redmatrix 1222
-                             :plugin 5})
+                             :redmatrix 1223
+                             :plugin 6})
 
 
 
@@ -187,6 +187,13 @@
     false ;; don't retry
     nil)) ;; retry as normal
 
+
+(defn redact
+  [m]
+  (walk/postwalk  #(if (and (map? %) (:pw %))
+                     (assoc % :pw "[REDACTED]")
+                     %)
+                  m))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (comment

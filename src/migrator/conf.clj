@@ -1,14 +1,10 @@
 (ns migrator.conf
-  (:require  [schema.core :as s]
-             [clojure.edn :as edn]
-             [migrator.migrator :as m]
-             [migrator.utils :as utils]
-             [mount.core :as mount]
-             [clojure.java.io :as jio]
-             [clj-yaml.core :as yaml]
-             [schema.coerce :as c]
-             [migrator.log :as mlog]
-             [taoensso.timbre :as log]))
+  (:require [clj-yaml.core :as yaml]
+            [clojure.java.io :as jio]
+            [migrator.log :as mlog]
+            [migrator.utils :as utils]
+            [schema.coerce :as c]
+            [schema.core :as s]))
 
 
 

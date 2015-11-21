@@ -1,9 +1,7 @@
 (ns migrator.conf-test
   (:require [clojure.test :refer :all]
-            [utilza.file :as file]
-            [taoensso.timbre :as log]
-            [migrator.conf :as conf :refer :all]
-            [schema.core :as s]))
+            [migrator.conf :refer :all]
+            [utilza.file :as file]))
 
 
 (defn ymls-with-path

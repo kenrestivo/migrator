@@ -1,5 +1,3 @@
-(ns migrator.core-test
-  (:require [clojure.test :refer :all]
-            [migrator.core :refer :all]))
+(ns migrator.core-test)
 
 

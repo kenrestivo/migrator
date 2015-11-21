@@ -1,18 +1,13 @@
 (ns migrator.log
-  (:require [mount.core :as mount]
-            [taoensso.timbre :as log]
-            [clojure.walk :as walk]
-            [utilza.java :as ujava]
+  (:require [clojure.tools.trace :as trace]
+            [migrator.utils :as utils]
+            [mount.core :as mount]
             [schema.core :as s]
-            [clojure.tools.trace :as trace]
-            [taoensso.timbre.appenders.core :as appenders]))
+            [taoensso.timbre :as log]
+            [taoensso.timbre.appenders.core :as appenders]
+            [utilza.java :as ujava]))
 
-(defn unpassword
-  [m]
-  (walk/postwalk  #(if (and (map? %) (:pw %))
-                     (assoc % :pw "[REDACTED]")
-                     %)
-                  m))
+
 
 
 (def Log
@@ -33,7 +28,7 @@
                                                    (fn [name value]
                                                      (log/debug name value))))
     (log/info "Welcome to Migrator" (ujava/revision-info "migrator" "migrator"))
-    (log/info "logging started" (unpassword config))
+    (log/info "logging started" (utils/redact config))
     log)) ;; so it gets into the state
 
 

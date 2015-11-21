@@ -1,20 +1,10 @@
 (ns migrator.net
   (:require [cheshire.core :as json]
-            [clojure.data :as data]
-            [robert.bruce :as bruce]
-            [utilza.file :as ufile]
-            [mount.core :as mount]
-            [utilza.misc :as umisc]
-            [utilza.json :as ujson]
-            [clojure.java.io :as jio]
-            [schema.core :as s]
-            ;; [utilza.mmemdb :as memdb] ;; not really needed yet
-            [taoensso.nippy :as nippy]
             [clj-http.client :as client]
             [migrator.utils :as utils]
-            [clojure.java.io :as jio]
-            [taoensso.timbre :as log]
-            [utilza.repl :as urepl]))
+            [robert.bruce :as bruce]
+            [schema.core :as s]
+            [taoensso.timbre :as log]))
 
 (def paths
   {:version "%s/migrator/version"})
