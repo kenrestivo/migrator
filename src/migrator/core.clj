@@ -2,6 +2,7 @@
   (:require [migrator.conf :as conf]
             [migrator.migrator :as m]
             [migrator.push :as p]
+            [schema.core :as s]
             [mount.core :as mount]
             [taoensso.timbre :as log])
   (:gen-class))
