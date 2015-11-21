@@ -5,7 +5,7 @@
             [migrator.net :as net]
             [robert.bruce :as bruce]
             [utilza.file :as ufile]
-            [mount :as mount]
+            [mount.core :as mount]
             [utilza.misc :as umisc]
             [utilza.json :as ujson]
             [clojure.java.io :as jio]

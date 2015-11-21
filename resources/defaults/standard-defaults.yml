@@ -1,0 +1,15 @@
+fetch:
+    max-retries:  10
+    socket-timeout: 120000
+    conn-timeout: 20000
+    retry-wait: 5000
+
+push:
+    socket-timeout: 120000
+    conn-timeout: 20000
+    max-retries: 20
+    retry-wait: 5000
+
+log:
+    spit-filename: migrator.log4j
+    level: info

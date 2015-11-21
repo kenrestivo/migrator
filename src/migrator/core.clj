@@ -5,7 +5,7 @@
             [schema.core :as s]
             [taoensso.timbre :as log]
             ;; [utilza.mmemdb :as memdb] not needed yet
-            [mount :as mount]
+            [mount.core :as mount]
             [migrator.conf :as conf]
             )
   (:gen-class))

@@ -6,15 +6,15 @@
             [schema.core :as s]))
 
 
-(defn edns-with-path
+(defn ymls-with-path
   [path]
-  (for [f (file/file-names path  #".*?\.edn$")]
+  (for [f (file/file-names path  #".*?\.yml$")]
     (str path "/" f)))
 
 (deftest example-confs
   (testing "example configs")
   ;; TODO: need java resoruce path
-  (is (every? map?  (for [f (edns-with-path "resources/config")]
+  (is (every? map?  (for [f (ymls-with-path "resources/config")]
                       (do
                         (testing f)
                         (read-and-validate f))))))
@@ -27,7 +27,7 @@
 
   ;;; for dev and production purposes only, not automated
   (deftest dev-confs
-    (is (every? map?  (for [f (edns-with-path "/home/cust/spaz/src/migrator-configs")]
+    (is (every? map?  (for [f (ymls-with-path "/home/cust/spaz/src/migrator-configs")]
                         (do 
                           (println f)
                           (testing f)

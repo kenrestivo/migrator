@@ -1,5 +1,5 @@
 (ns migrator.log
-  (:require [mount :as mount]
+  (:require [mount.core :as mount]
             [taoensso.timbre :as log]
             [utilza.java :as ujava]
             [schema.core :as s]

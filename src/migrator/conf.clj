@@ -3,8 +3,10 @@
              [clojure.edn :as edn]
              [migrator.migrator :as m]
              [migrator.utils :as utils]
-             [mount :as mount]
+             [mount.core :as mount]
              [clojure.java.io :as jio]
+             [clj-yaml.core :as yaml]
+             [schema.coerce :as c]
              [migrator.log :as mlog]
              [taoensso.timbre :as log]))
 
@@ -29,11 +31,33 @@
 (defn read-and-validate
   [conf-file]
   (println "Loading conf file" conf-file)
-  (let [defaults (-> "defaults/standard-defaults.edn" jio/resource slurp edn/read-string)]
+  (let [coercer (c/coercer Settings c/json-coercion-matcher)
+        defaults (-> "defaults/standard-defaults.yml" jio/resource slurp yaml/parse-string)]
     (->> conf-file
          slurp
-         edn/read-string
+         yaml/parse-string
          (merge-with merge defaults)
+         coercer
          (s/validate Settings))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(comment
+
+
+
+  (let [defaults (-> "defaults/standard-defaults.yml" jio/resource slurp yaml/parse-string)
+        coercer (c/coercer Settings c/json-coercion-matcher)]
+    (->> "resources/config/simple-config.yml"
+         slurp
+         yaml/parse-string
+         (merge-with merge defaults)
+         coercer
+         (spit "/tmp/foo.edn")))
+
+    (->> "/home/cust/spaz/src/migrator-configs/spazhub-test.yml"
+         slurp
+         yaml/parse-string)
+
+)

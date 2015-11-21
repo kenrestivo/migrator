@@ -1,0 +1,24 @@
+fetch:
+    max-retries:  10
+    socket-timeout: 120000
+    conn-timeout: 20000
+    retry-wait: 5000
+    base-url: 'http://hubzilla'
+    pw: test
+    login: testes
+
+push:
+    socket-timeout: 120000
+    conn-timeout: 20000
+    max-retries: 20
+    retry-wait: 5000
+    base-url: 'http://anotherhubzilla'
+    pw: test
+    login: testes
+
+log:
+    spit-filename: migrator.log4j
+    level: info
+
+storage:
+    save-directory: /mnt/sdcard/tmp/out

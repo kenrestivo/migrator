@@ -13,7 +13,7 @@
             [clojure.test :as test]
             ;; [clojure.core.async :refer [>!! <!! >! <! go-loop alt! timeout]]
             [clojure.tools.namespace.repl :as tn]
-            [mount]
+            [mount.core :as mount]
             ))  ;; <<<< replace this your "app" namespace(s) you want to be available at REPL time
 
 (defn start []

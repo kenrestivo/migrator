@@ -2,7 +2,7 @@
   (:require [cheshire.core :as json]
             [clojure.data :as data]
             [utilza.file :as ufile]
-            [mount :as mount]
+            [mount.core :as mount]
             [migrator.net :as net]
             [utilza.misc :as umisc]
             [utilza.json :as ujson]
