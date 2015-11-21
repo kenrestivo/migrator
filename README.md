@@ -33,12 +33,12 @@ TODO: link
 The basic configuration file is:
 ```yaml
 fetch:
-    base-url: 'http://hubzilla'
+    base-url: http://hubzilla
     pw: test
     login: testes
 
 push:
-    base-url: 'http://anotherhubzilla'
+    base-url: http://anotherhubzilla
     pw: test
     login: testes
 
@@ -46,6 +46,7 @@ storage:
     save-directory: /mnt/sdcard/tmp/out
 
 ```
+There are also parameters for connection timeout, number of retries, etc. which you might need to mess with if your server is crashing or your network is especially flaky. There's a complete example in the repository.
 
 ## Usage
 
