@@ -1,24 +1,25 @@
-fetch:
+fetch:  # Settings for your old server
+    base-url: http://hubzilla  # What it says. You can include a http://host:port too.
+    pw: test  
+    login: test
+    max-retries:  10  # How many times to retry on a transient network error.
+    retry-wait: 5000  # How long to wait between retries.  A backoff algorithm will double this every time.
+    socket-timeout: 120000  #Timeout waiting for a socket to timeout.  If the server is slow, set longer.
+    conn-timeout: 20000 # How long to wait for a connection to the server.
+
+push:  # Settings for your NEW server. Logins and passwords can be different.
+    base-url: http://anotherhubzilla  # This had better be a different URL than your old server!
+    pw: test
+    login: test
     max-retries:  10
     socket-timeout: 120000
     conn-timeout: 20000
     retry-wait: 5000
-    base-url: http://hubzilla
-    pw: test
-    login: testes
 
-push:
-    socket-timeout: 120000
-    conn-timeout: 20000
-    max-retries: 20
-    retry-wait: 5000
-    base-url: http://anotherhubzilla
-    pw: test
-    login: testes
-
-log:
-    spit-filename: migrator.log4j
-    level: info
-
-storage:
+storage: # Where to save the JSON files. This must be readable and writable.
     save-directory: /mnt/sdcard/tmp/out
+
+
+log:  # Logging configuration
+    spit-filename: migrator.log4j  # Where to save the log.
+    level: info  # By default, log only necessary things. Other levels are warn, debug, and trace.

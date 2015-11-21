@@ -32,17 +32,17 @@ TODO: link
 
 The basic configuration file is:
 ```yaml
-fetch:
-    base-url: http://hubzilla
-    pw: test
-    login: testes
+fetch:  # Settings for your old server
+    base-url: http://hubzilla  # What it says. You can include a http://host:port too.
+    pw: test  
+    login: test
 
-push:
-    base-url: http://anotherhubzilla
+push:  # Settings for your NEW server. Logins and passwords can be different.
+    base-url: http://anotherhubzilla  # This had better be a different URL than your old server!
     pw: test
-    login: testes
+    login: test
 
-storage:
+storage: # Where to save the JSON files. This must be readable and writable.
     save-directory: /mnt/sdcard/tmp/out
 
 ```
@@ -55,6 +55,9 @@ Run it from the command line as a jar, giving it a config file:
 ```sh
 	java -jar target/migrator.jar path-to-your-config-file.edn
 ```
+
+## Debugging
+Networks are flaky and Hubzilla imports tend to crash MySQL with out-of-memory errors. The log file saves the history of the migrator as it's running. You can set debug level higher if needed.
 
 
 ## Building
