@@ -64,10 +64,10 @@
                            :socket-timeout socket-timeout
                            :conn-timeout conn-timeout
                            :retry-handler (utils/make-retry-fn retry-wait max-retries)
-                           :multipart [{:name "Content/type" :content "application/json"}
-                                       {:name "Content-Transfer-Encoding" :content "binary"}
-                                       (when seize {:name "make_primary" :content (str seize)})
-                                       {:name "filename" :content (clojure.java.io/file filepath)}]
+                           :multipart (cond-> [{:name "Content/type" :content "application/json"}
+                                               {:name "Content-Transfer-Encoding" :content "binary"}
+                                               {:name "filename" :content (clojure.java.io/file filepath)}]
+                                             seize (conj {:name "make_primary" :content (str seize)}))
                            :as :json}
                           (utils/trust-settings)))
       :body))
