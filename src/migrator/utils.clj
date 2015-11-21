@@ -11,7 +11,7 @@
            org.joda.time.DateTime))
 
 
-;; TODO: move to conf file
+;; TODO: move to conf file? somewhere?
 (def accounts-file "accounts.json")
 (def channels-file "channels.json")
 (def identity-file  "identity.json")
@@ -19,7 +19,7 @@
 
 
 (def min-supported-versions {:hubzilla 1223
-                             :redmatrix 9999
+                             :redmatrix 1222
                              :plugin 5})
 
 
@@ -147,6 +147,8 @@
        ujson/slurp-json
        :channel_hashes
        (map :channel_hash)))
+
+
 
 (s/defn walk-dir-channel
   [save-directory]

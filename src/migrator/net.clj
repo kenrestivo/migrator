@@ -80,14 +80,14 @@
       "hubzilla" (when (< cleaned-platform hubzilla)
                    (throw (Exception. 
                            (format
-                            "Server on %s has hubzilla version %d which is too old. Upgrade it to %d or higher."
+                            "Server on %s has hubzilla version %s which is too old. Upgrade it to %d or higher."
                             base-url
                             platform_version
                             hubzilla))))
       "redmatrix" (when (< cleaned-platform redmatrix)
                     (throw (Exception. 
                             (format
-                             "Server on %s has redmatrix version %d which is too old. Upgrade it to %d or higher."
+                             "Server on %s has redmatrix version %s which is too old. Upgrade it to %d or higher."
                              base-url
                              platform_version
                              redmatrix))))

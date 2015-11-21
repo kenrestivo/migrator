@@ -190,6 +190,11 @@
 
   (future-cancel running)
 
+  (s/with-fn-validation
+    (utils/catcher
+     (net/test-version (:fetch fetch))))
+
+  (log/error (.getCause *e))
 
   )
 
