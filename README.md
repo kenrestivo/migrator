@@ -86,6 +86,7 @@ You can run it without making a uberjar by just
 
 - Directory doesn't seem to update after migration. Not sure why yet.
 - MySQL crashes on the server during channel imports, which seems to be a Hubzilla resource-usage problem. You might try turning off your poller.php cron job while your imports are going; the poller appears likely to be locking up the system.
+- JVM stacktraces are huge and noisy, and Clojure stacktraces are huger and noisier. Digging through the noise to find the real source of the error is not always easy.
 
 ## License
 
