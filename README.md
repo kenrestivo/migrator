@@ -53,7 +53,7 @@ storage: # Where to save the JSON files. This must be readable and writable.
     save-directory: /mnt/sdcard/tmp/out
 
 ```
-There are also parameters for connection timeout, number of retries, etc. which you might need to mess with if your server is crashing or your network is especially flaky. There's a complete example in the repository.
+There are also parameters for connection timeout, number of retries, etc. which you might need to mess with if your server is crashing or your network is especially flaky. There's [a complete example](https://github.com/kenrestivo/migrator/blob/master/resources/config/complete-config.yml) in the repository.
 
 ## Usage
 
@@ -64,7 +64,7 @@ Run it from the command line as a jar, giving it a config file:
 ```
 
 ## Debugging
-Hubzilla imports tend to crash MySQL with out-of-memory errors. The log file saves the history of the migrator as it's running. You can set debug level higher if needed.
+Hubzilla imports tend to crash MySQL with out-of-memory errors. The log file saves the history of the migrator as it's running. You can set debug level higher if needed, in the config file.
 
 
 ## Building
