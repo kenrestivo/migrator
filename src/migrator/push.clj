@@ -236,6 +236,10 @@
        (urepl/massive-spew  "/tmp/foo.edn"))
 
 
+  (s/with-fn-validation
+    (utils/catcher
+     (net/test-version (:push push))))
+
   )
 
 

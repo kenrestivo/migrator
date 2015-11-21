@@ -179,7 +179,7 @@
 (defn un-404
   [e] 
   (log/debug (.getMessage e))
-  (if (= 404 (some-> e .data :status))
+  (if (#{404 401} (some-> e .data :status))
     false ;; don't retry
     nil)) ;; retry as normal
 
