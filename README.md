@@ -19,6 +19,7 @@ First alpha release 0.1.0
 - A couple hundred MB of RAM (probably not good to run on a VPS).
 - Disk space for all the files
 - Good reliable fast internet access to both the old and new server
+- Some means of automatically restarting the MySQL process on your server if(when) it crashes, especially if your server is memory-constrained.
 - Time and patience
 
 
@@ -30,7 +31,7 @@ First alpha release 0.1.0
 
 ## Downloading
 
-Pre-built JAR files are available from:
+[A pre-built JAR file](https://hub.spaz.org/cloud/bamfic/migrator/migrator.jar) is available from the Hubzilla matrix
 
 
 ## Configuration
@@ -63,7 +64,7 @@ Run it from the command line as a jar, giving it a config file:
 ```
 
 ## Debugging
-Networks are flaky and Hubzilla imports tend to crash MySQL with out-of-memory errors. The log file saves the history of the migrator as it's running. You can set debug level higher if needed.
+Hubzilla imports tend to crash MySQL with out-of-memory errors. The log file saves the history of the migrator as it's running. You can set debug level higher if needed.
 
 
 ## Building
