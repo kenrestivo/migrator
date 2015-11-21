@@ -11,6 +11,7 @@
                  [com.taoensso/timbre "4.1.4"]
                  [prismatic/schema "1.0.3"]
                  [utilza "0.1.80"]
+                 [org.clojure/tools.trace "0.7.9"]
                  [clj-yaml "0.4.0" :exclusions [org.yaml/snakeyaml]]
                  [org.yaml/snakeyaml "1.16"]
                  [robert/bruce "0.8.0"]
@@ -18,8 +19,18 @@
                  [hiccup "1.0.5"]
                  [clj-http "2.0.0"]
                  ]
+  :capsule {
+            :types {
+                    :fat {} } } 
   :main migrator.core
-  :uberjar-name "migrator.jar"
-  :profiles {:repl {:timeout 180000}}
+  :profiles {:repl {:timeout 180000}
+             :uberjar {:aot [migrator.core]
+                       :uberjar-name "migrator.jar"}
+             :dev  {:jvm-opts ["-client"]
+                    :plugins [
+                              [lein-capsule "0.2.0"] ]}}
 
   )
+
+
+
