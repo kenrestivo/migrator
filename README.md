@@ -8,14 +8,14 @@ This can be used for migrating hubs, and also for replicating them in a distribu
 
 ## Status
 
-Pre-alpha, still work in progress
+First alpha release 0.1.0
 
 ## Requirements
 
-- A Hubzilla hub into which you want to put the new accounts, with the most recent version of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured, and the most recent version of Hubzilla.
-- A Hubzilla/Redmatrix hub with your old accounts, and the most recent version of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured, and the most recent version of Hubzilla.
+- A Hubzilla hub, running version 1223 or higher, into which you want to put the new accounts, with version 6 or higher of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured, and the most recent version of Hubzilla.
+- A Hubzilla/Redmatrix hub with your old accounts, running version 1223 or higher, and version 6 or higher of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured, and the most recent version of Hubzilla.
 - An admin account user login and password on both the old and new server (they don't have to be the same accont or credentials at all).
-- Java Runtime (OpenJDK or similar)
+- Java Runtime (OpenJDK or similar) version 8.
 - A couple hundred MB of RAM (probably not good to run on a VPS).
 - Disk space for all the files
 - Good reliable fast internet access to both the old and new server
@@ -31,7 +31,7 @@ Pre-alpha, still work in progress
 ## Downloading
 
 Pre-built JAR files are available from:
-TODO: link
+
 
 ## Configuration
 
@@ -44,7 +44,7 @@ fetch:  # Settings for your old server
 
 push:  # Settings for your NEW server. Logins and passwords can be different.
     base-url: http://anotherhubzilla  # This had better be a different URL than your old server!
-    seize: false # Relevant only for push. Will take control of the imported channels from other hubs
+    seize: false # Relevant only for push. If true, will take control of the imported channels from other hubs.
     pw: test
     login: test
 
@@ -59,7 +59,7 @@ There are also parameters for connection timeout, number of retries, etc. which 
 Run it from the command line as a jar, giving it a config file:
 
 ```sh
-	java -jar target/migrator.jar path-to-your-config-file.edn
+	java -jar target/migrator.jar path-to-your-config-file.yml
 ```
 
 ## Debugging
@@ -78,8 +78,13 @@ Networks are flaky and Hubzilla imports tend to crash MySQL with out-of-memory e
 
 You can run it without making a uberjar by just
 ```sh
-	lein run path-to-your-config-file
+	lein run path-to-your-config-file.yml
 ```
+
+## Known Bugs
+
+- Directory doesn't seem to update after migration. Not sure why yet.
+- MySQL crashes on the server during channel imports, which is likely a Hubzilla resource-usage problem.
 
 ## License
 

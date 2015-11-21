@@ -1,4 +1,4 @@
-(defproject migrator "0.1.0-SNAPSHOT"
+(defproject migrator "0.1.0"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -19,7 +19,8 @@
                  [hiccup "1.0.5"]
                  [clj-http "2.0.0"]
                  ]
-  :capsule {
+  :capsule {:execution {:boot  {:scripts {:unix "" :windows ""}}}
+            :runtime {:min-java-version "7" :java-version "8"}
             :types {
                     :fat {} } } 
   :main migrator.core
