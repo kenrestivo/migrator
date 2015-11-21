@@ -44,6 +44,7 @@
   (merge ServerCoords
          {(s/required-key :max-retries) s/Int
           (s/required-key :socket-timeout) s/Int
+          (s/optional-key :seize) s/Bool ;; only relevant for push, but i can't  maintain two maps
           (s/required-key :conn-timeout) s/Int
           (s/required-key :retry-wait) s/Int}))
 

@@ -1,3 +1,5 @@
+# Config file master for Migrator.
+
 fetch:  # Settings for your old server
     base-url: http://hubzilla  # What it says. You can include a http://host:port too.
     pw: test  
@@ -12,6 +14,7 @@ push:  # Settings for your NEW server. Logins and passwords can be different.
     pw: test
     login: test
     max-retries:  10
+    seize: false # Relevant only for push. Will take control of the imported channels from other hubs
     socket-timeout: 120000
     conn-timeout: 20000
     retry-wait: 5000

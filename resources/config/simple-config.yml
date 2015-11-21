@@ -7,6 +7,7 @@ push:
     base-url: http://anotherhubzilla
     pw: test
     login: testes
+    seize: false
 
 storage:
     save-directory: /mnt/sdcard/tmp/out

@@ -44,6 +44,7 @@ fetch:  # Settings for your old server
 
 push:  # Settings for your NEW server. Logins and passwords can be different.
     base-url: http://anotherhubzilla  # This had better be a different URL than your old server!
+    seize: false # Relevant only for push. Will take control of the imported channels from other hubs
     pw: test
     login: test
 

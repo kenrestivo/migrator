@@ -54,7 +54,7 @@
 ;; XXX duplicate/boilerplate, TODO combine with pusher
 (s/defn push-multipart
   "POSTs URL with basic auth"
-  [{:keys [retry-wait max-retries login pw socket-timeout conn-timeout]} :- utils/Serv
+  [{:keys [retry-wait seize max-retries login pw socket-timeout conn-timeout]} :- utils/Serv
    url :- s/Str
    filepath :- s/Str]
   (log/trace "pusher: pushing multipart" url)
@@ -66,6 +66,7 @@
                            :retry-handler (utils/make-retry-fn retry-wait max-retries)
                            :multipart [{:name "Content/type" :content "application/json"}
                                        {:name "Content-Transfer-Encoding" :content "binary"}
+                                       (when seize {:name "make_primary" :content (str seize)})
                                        {:name "filename" :content (clojure.java.io/file filepath)}]
                            :as :json}
                           (utils/trust-settings)))
@@ -239,6 +240,8 @@
   (s/with-fn-validation
     (utils/catcher
      (net/test-version (:push push))))
+
+
 
   )
 
