@@ -3,7 +3,7 @@ fetch:
     socket-timeout: 120000
     conn-timeout: 20000
     retry-wait: 5000
-    base-url: 'http://hubzilla'
+    base-url: http://hubzilla
     pw: test
     login: testes
 
@@ -12,7 +12,7 @@ push:
     conn-timeout: 20000
     max-retries: 20
     retry-wait: 5000
-    base-url: 'http://anotherhubzilla'
+    base-url: http://anotherhubzilla
     pw: test
     login: testes
 

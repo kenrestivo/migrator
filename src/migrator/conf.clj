@@ -43,21 +43,4 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(comment
 
-
-
-  (let [defaults (-> "defaults/standard-defaults.yml" jio/resource slurp yaml/parse-string)
-        coercer (c/coercer Settings c/json-coercion-matcher)]
-    (->> "resources/config/simple-config.yml"
-         slurp
-         yaml/parse-string
-         (merge-with merge defaults)
-         coercer
-         (spit "/tmp/foo.edn")))
-
-    (->> "/home/cust/spaz/src/migrator-configs/spazhub-test.yml"
-         slurp
-         yaml/parse-string)
-
-)

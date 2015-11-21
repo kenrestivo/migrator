@@ -30,7 +30,22 @@ TODO: link
 
 ## Configuration
 
-TODO document the config file format
+The basic configuration file is:
+```yaml
+fetch:
+    base-url: 'http://hubzilla'
+    pw: test
+    login: testes
+
+push:
+    base-url: 'http://anotherhubzilla'
+    pw: test
+    login: testes
+
+storage:
+    save-directory: /mnt/sdcard/tmp/out
+
+```
 
 ## Usage
 
