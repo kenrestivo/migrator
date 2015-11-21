@@ -52,7 +52,7 @@
     (mount/stop)
     (s/with-fn-validation
       (mount/start-with-args (conf/read-and-validate
-                              "/home/cust/spaz/src/migrator-configs/spazhub-test.edn")))
+                              "/home/cust/spaz/src/migrator-configs/spazhub-test.yml")))
     )
 
   (conf/read-and-validate "config.edn")

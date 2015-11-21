@@ -179,7 +179,8 @@
 (defn un-404
   [e] 
   (log/debug (.getMessage e))
-  (if (#{404 401} (some-> e .data :status))
+  (if (or (not (instance? clojure.lang.ExceptionInfo e))  ;; it's not even a clj-http error
+          (some-> e .data :status #{404 401}))
     false ;; don't retry
     nil)) ;; retry as normal
 

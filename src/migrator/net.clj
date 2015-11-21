@@ -53,17 +53,19 @@
                                      (utils/pathify fetch paths :version))
                                     (json/decode true)))
           (catch Exception e
-            (case (some-> e .data :status)
-              404 (throw (Exception. 
-                          ;; TODO: check for incorrect plugin path, maybe by testing the WRONG path to see if it succeeds?
-                          (format
-                           "Server on %s doesn't have the Migrator plugin installed or enabled. Enable it. Make sure it's installed in extend/addon/migrator not extend/addon/migrator-plugin too."
-                           base-url)))
-              401 (throw (Exception. 
-                          (format
-                           "You have the incorrect password set in the config file for the server at %s"
-                           base-url)))
-              e)))
+            (if (instance? clojure.lang.ExceptionInfo e)
+              (case (some-> e .data :status)
+                404 (throw (Exception. 
+                            ;; TODO: check for incorrect plugin path, maybe by testing the WRONG path to see if it succeeds?
+                            (format
+                             "Server on %s doesn't have the Migrator plugin installed or enabled. Enable it. Make sure it's installed in extend/addon/migrator not extend/addon/migrator-plugin too."
+                             base-url)))
+                401 (throw (Exception. 
+                            (format
+                             "You have the incorrect password set in the config file for the server at %s"
+                             base-url)))
+                (throw e))
+              (throw e))))
         {:keys [hubzilla redmatrix plugin]} utils/min-supported-versions
         cleaned-platform (utils/clean-platform platform_version)]
     (log/info base-url "is running versions:" v)
