@@ -27,7 +27,7 @@ First alpha release 0.1.0
 
 1. Assure you have met the requirements as above
 2. Delete or expire any accounts from the old server that you don't want to migrate.
-3. Make sure your server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
+3. Make sure your new server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
 
 ## Downloading
 
