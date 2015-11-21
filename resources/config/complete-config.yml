@@ -5,9 +5,9 @@ fetch:  # Settings for your old server
     pw: test  
     login: test
     max-retries:  10  # How many times to retry on a transient network error.
-    retry-wait: 5000  # How long to wait between retries.  A backoff algorithm will double this every time.
-    socket-timeout: 120000  #Timeout waiting for a socket to timeout.  If the server is slow, set longer.
-    conn-timeout: 20000 # How long to wait for a connection to the server.
+    retry-wait: 5000  # How long (milliseconds) to wait between retries.  Algorithm will double this every time.
+    socket-timeout: 120000  #Timeout (ms) waiting for a socket to open.  If the server is slow, set longer.
+    conn-timeout: 20000 # How long (ms) to wait for a connection to the server.
 
 push:  # Settings for your NEW server. Logins and passwords can be different.
     base-url: http://anotherhubzilla  # This had better be a different URL than your old server!
