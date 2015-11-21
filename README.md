@@ -15,7 +15,7 @@ First alpha release 0.1.0
 - A Hubzilla hub, running version 1223 or higher, into which you want to put the new accounts, with version 6 or higher of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured.
 - A Hubzilla/Redmatrix hub with your old accounts, running version 1223 or higher, and version 6 or higher of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured.
 - An admin account user login and password on both the old and new server (they don't have to be the same accont or credentials at all).
-- Java Runtime (OpenJDK or similar) version 8.
+- Java Runtime (OpenJDK or similar) version 8 (for the binary; the source should compile and run with Java 7)
 - A couple hundred MB of RAM (probably not good to run on a VPS).
 - Disk space for all the files
 - Good reliable fast internet access to both the old and new server
