@@ -2,6 +2,8 @@
 
 A utility to migrate [Hubzilla](https://github.com/redmatrix/hubzilla) hubs from one server to another, and to migrate Redmatrix hubs to Hubzilla.
 
+The tool runs on your desktop and uses the Hubzilla built-in channel import/export capabilities and a plugin to pull down acounts, channels, and items. It saves these to your local drive as JSON files, then uploads them to your new server.
+
 ## Status
 
 Pre-alpha, still work in progress
