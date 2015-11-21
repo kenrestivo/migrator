@@ -85,7 +85,7 @@ You can run it without making a uberjar by just
 ## Known Bugs
 
 - Directory doesn't seem to update after migration. Not sure why yet.
-- MySQL crashes on the server during channel imports, which is likely a Hubzilla resource-usage problem.
+- MySQL crashes on the server during channel imports, which seems to be a Hubzilla resource-usage problem. You might try turning off your poller.php cron job while your imports are going; the poller appears likely to be locking up the system.
 
 ## License
 
