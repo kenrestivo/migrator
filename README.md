@@ -2,7 +2,9 @@
 
 A utility to migrate [Hubzilla](https://github.com/redmatrix/hubzilla) hubs from one server to another, and to migrate Redmatrix hubs to Hubzilla.
 
-The tool runs on your desktop and uses the Hubzilla built-in channel import/export capabilities and a plugin to pull down acounts, channels, and items. It saves these to your local drive as JSON files, then uploads them to your new server.
+The tool runs on your desktop and uses the Hubzilla built-in channel import/export capabilities and a plugin to pull down all of the accounts, channels, and items on a hub. It saves these to your local drive as JSON files, then uploads them to your new server.
+
+This can be used for migrating hubs, and also for replicating them in a distributed manner without the users having to do any work.
 
 ## Status
 
@@ -10,8 +12,8 @@ Pre-alpha, still work in progress
 
 ## Requirements
 
-- A Hubzilla/Redmatrix hub with the most recent version of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured, and the most recent version of Hubzilla.
 - A Hubzilla hub into which you want to put the new accounts, with the most recent version of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured, and the most recent version of Hubzilla.
+- A Hubzilla/Redmatrix hub with your old accounts, and the most recent version of the [Migrator Plugin](https://github.com/kenrestivo/migrator-plugin) installed, enabled, and correctly configured, and the most recent version of Hubzilla.
 - An admin account user login and password on both the old and new server (they don't have to be the same accont or credentials at all).
 - Java Runtime (OpenJDK or similar)
 - A couple hundred MB of RAM (probably not good to run on a VPS).
