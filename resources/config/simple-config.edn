@@ -1,0 +1,10 @@
+{:fetch {:base-url "http://hubzilla"
+         :pw "test"
+         :login "testes"
+         }
+ :push {:base-url "http://anotherhubzilla"
+        :pw "test"
+        :login "testes"
+        }
+ :storage {:save-directory "/mnt/sdcard/tmp/out"}}
+

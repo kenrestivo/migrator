@@ -4,6 +4,7 @@
              [migrator.migrator :as m]
              [migrator.utils :as utils]
              [mount :as mount]
+             [clojure.java.io :as jio]
              [migrator.log :as mlog]
              [taoensso.timbre :as log]))
 
@@ -28,9 +29,11 @@
 (defn read-and-validate
   [conf-file]
   (println "Loading conf file" conf-file)
-  (->> conf-file
-       slurp
-       edn/read-string
-       (s/validate Settings)))
+  (let [defaults (-> "defaults/standard-defaults.edn" jio/resource slurp edn/read-string)]
+    (->> conf-file
+         slurp
+         edn/read-string
+         (merge-with merge defaults)
+         (s/validate Settings))))
 
 
