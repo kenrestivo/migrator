@@ -2,6 +2,8 @@
   (:require [migrator.conf :as conf]
             [migrator.migrator :as m]
             [migrator.push :as p]
+            [migrator.net :as net]
+            [mount.core :as mount]
             [schema.core :as s]
             [mount.core :as mount]
             [taoensso.timbre :as log])
@@ -10,7 +12,15 @@
 
 (defn run-all
   []
-  (m/run-fetch m/fetch)
+  (when (=  (-> p/push :push :base-url)
+            (-> m/fetch :fetch :base-url))
+    ;; HACK. TODO: move this to the config file checking
+    (throw (Exception. "Wrong. You can't migrate to the same server you're migrating from.")))
+
+  ;; don't wait for a full fetch before yelling if push server is misconfigured
+  (-> p/push :push net/test-version)
+
+  (m/run-fetch m/fetch)  ;; will check fetch version before run
   (p/run-push p/push)
   (log/info "Migration complete! Check for errors."))
 
