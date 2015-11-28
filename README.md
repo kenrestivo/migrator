@@ -27,10 +27,13 @@ First alpha release 0.1.0
 
 1. Assure you have met the requirements as above
 2. Set your /etc/my.cnf and /etc/apache2/mods-enabled/mpm_prefork.conf as recommended in [the Hubzilla INSTALL.txt](https://github.com/redmatrix/hubzilla/blob/master/install/INSTALL.txt#L346) with regard to connections and prefork settings.
-3. On the new server you are importing to, be sure to set your max_execution time and max_input_time to very large numbers, i.e.
+3. On the new server you are importing to, be sure to set your max_execution time and max_input_time to very large numbers, and your maximum post size very large too, i.e.
 ```conf
 max_execution_time = 300
 max_input_time = 300
+post_max_size = 100M
+upload_max_filesize = 100M
+
 ```
 4. Delete or expire any accounts from the old server that you don't want to migrate.
 5. Make sure your new server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
