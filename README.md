@@ -27,7 +27,7 @@ First alpha release 0.1.0
 
 1. Assure you have met the requirements as above
 2. Set your /etc/my.cnf and /etc/apache2/mods-enabled/mpm_prefork.conf as recommended in [the Hubzilla INSTALL.txt](https://github.com/redmatrix/hubzilla/blob/master/install/INSTALL.txt#L346) with regard to connections and prefork settings.
-3. On the server you are importing to, be sure to set your max_execution time and max_input_time to very large numbers, i.e.
+3. On the new server you are importing to, be sure to set your max_execution time and max_input_time to very large numbers, i.e.
 ```conf
 max_execution_time = 300
 max_input_time = 300
