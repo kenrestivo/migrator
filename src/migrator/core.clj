@@ -18,11 +18,10 @@
     (throw (Exception. "Wrong. You can't migrate to the same server you're migrating from.")))
 
   ;; don't wait for a full fetch before yelling if push server is misconfigured
-  (-> p/push :push net/test-version)
-
-  (m/run-fetch m/fetch)  ;; will check fetch version before run
-  (p/run-push p/push)
-  (log/info "Migration complete! Check for errors."))
+  (when (-> p/push :push net/test-version)
+    (m/run-fetch m/fetch)  ;; will check fetch version before run
+    (p/run-push p/push)
+    (log/info "Migration complete! Check for errors.")))
 
 
 (defn -main
@@ -32,6 +31,7 @@
       (println "Starting components" conf-file)
       (mount/start-with-args (conf/read-and-validate conf-file)))
     (run-all)
+    (System/exit 0)
     (catch Exception e
       (println (.getMessage e))
       (println (.getCause e)))))

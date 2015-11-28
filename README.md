@@ -26,8 +26,9 @@ First alpha release 0.1.0
 ## Preparing for migration
 
 1. Assure you have met the requirements as above
-2. Delete or expire any accounts from the old server that you don't want to migrate.
-3. Make sure your new server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
+2. Set your /etc/my.cnf and /etc/apache2/mods-enabled/mpm_prefork.conf as recommended in [the Hubzilla INSTALL.txt](https://github.com/redmatrix/hubzilla/blob/master/install/INSTALL.txt#L346) with regard to connections and prefork settings.
+3. Delete or expire any accounts from the old server that you don't want to migrate.
+4. Make sure your new server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
 
 ## Downloading
 
@@ -85,7 +86,7 @@ You can run it without making a uberjar by just
 ## Known Bugs
 
 - Directory doesn't seem to update after migration. Not sure why yet.
-- MySQL crashes on the server during channel imports, which seems to be a Hubzilla resource-usage problem. You might try turning off your poller.php cron job while your imports are going; the poller appears likely to be locking up the system.
+- MySQL crashes on the server during channel imports, which seems to be a Hubzilla resource-usage problem. You should try the advice in [the Hubzilla INSTALL.txt](https://github.com/redmatrix/hubzilla/blob/master/install/INSTALL.txt#L346) with regard to prefork and mysql settings.
 - JVM stacktraces are huge and noisy, and Clojure stacktraces are huger and noisier. Digging through the noise to find the real source of the error is not always easy.
 
 ## License
