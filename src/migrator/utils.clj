@@ -34,19 +34,16 @@
 
 
 
-
-(def ServerCoords {(s/required-key :login) s/Str
-                   (s/required-key :pw) s/Str
-                   (s/required-key :base-url) s/Str})
-
-
 (def Serv
-  (merge ServerCoords
-         {(s/required-key :max-retries) s/Int
-          (s/required-key :socket-timeout) s/Int
-          (s/optional-key :seize) s/Bool ;; only relevant for push, but i can't  maintain two maps
-          (s/required-key :conn-timeout) s/Int
-          (s/required-key :retry-wait) s/Int}))
+  {(s/required-key :login) s/Str
+   (s/required-key :pw) s/Str
+   (s/required-key :base-url) s/Str
+   (s/required-key :max-retries) s/Int
+   (s/required-key :socket-timeout) s/Int
+   (s/optional-key :insecure)  s/Bool
+   (s/optional-key :seize) s/Bool ;; only relevant for push, but i can't  maintain two maps
+   (s/required-key :conn-timeout) s/Int
+   (s/required-key :retry-wait) s/Int})
 
 
 
@@ -126,18 +123,18 @@
 (s/defn slurp-accounts
   [storage :- Storage]
   (-> storage 
-      :save-directory 
-      (str "/" accounts-file) 
-      ujson/slurp-json 
-      :users))
+    :save-directory 
+    (str "/" accounts-file) 
+    ujson/slurp-json 
+    :users))
 
 
 (s/defn clean-platform
   [platform :- s/Str]
   (->> platform 
-       (re-matches #".+?\.(\d+).*?$" )
-       second
-       Integer/parseInt))
+    (re-matches #".+?\.(\d+).*?$" )
+    second
+    Integer/parseInt))
 
 
 (defn channels-from-json

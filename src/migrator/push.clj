@@ -25,7 +25,7 @@
 
 (s/defn pusher
   "POSTs URL with basic auth"
-  [{:keys [retry-wait max-retries login pw socket-timeout conn-timeout]} :- utils/Serv
+  [{:keys [retry-wait insecure max-retries login pw socket-timeout conn-timeout]} :- utils/Serv
    url :- s/Str
    account :- {s/Keyword s/Any}]
   (log/trace "pusher: pushing" url)
@@ -35,6 +35,7 @@
                            :headers {"Content-Type" "application/json"}
                            :retry-handler (utils/make-retry-fn retry-wait max-retries)
                            :socket-timeout socket-timeout
+                           :insecure? insecure
                            :conn-timeout conn-timeout
                            :body (json/encode account)
                            :as :json}
@@ -45,7 +46,7 @@
 ;; XXX duplicate/boilerplate, TODO combine with pusher
 (s/defn push-multipart
   "POSTs URL with basic auth"
-  [{:keys [retry-wait seize max-retries login pw socket-timeout conn-timeout]} :- utils/Serv
+  [{:keys [retry-wait seize max-retries login pw insecure socket-timeout conn-timeout]} :- utils/Serv
    url :- s/Str
    filepath :- s/Str]
   (log/trace "pusher: pushing multipart" url)
@@ -53,6 +54,7 @@
       (client/post (merge {:basic-auth [login pw]
                            :throw-entire-message? true
                            :socket-timeout socket-timeout
+                           :insecure? insecure
                            :conn-timeout conn-timeout
                            :retry-handler (utils/make-retry-fn retry-wait max-retries)
                            :multipart (cond-> [{:name "Content/type" :content "application/json"}
@@ -141,8 +143,8 @@
 
 (s/defn run-push
   [{:keys [push storage] :as settings} :- PushArgs]
+  (net/test-version push)
   (try
-    (net/test-version push)
     (doto settings
       upload-accounts
       upload-channels

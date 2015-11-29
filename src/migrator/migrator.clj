@@ -62,11 +62,11 @@
    channel-hash :- s/Str]
   (log/debug "Checking first post date for" channel-hash)
   (utils/bruce-wrap (assoc (utils/bruceify settings) :error-hook utils/un-404)
-                    (some-> settings
-                            (net/fetcher (utils/pathify settings paths :first-post channel-hash))
-                            (json/decode true)
-                            :date
-                            split-year-month)))
+    (some-> settings
+            (net/fetcher (utils/pathify settings paths :first-post channel-hash))
+            (json/decode true)
+            :date
+            split-year-month)))
 
 
 (s/defn get-identities
@@ -117,8 +117,8 @@
 
 (s/defn run-fetch
   [{:keys [fetch storage] :as settings} :- net/FetchArgs]
+  (net/test-version fetch)
   (try
-    (net/test-version fetch)
     (doto settings
       get-accounts
       get-channels

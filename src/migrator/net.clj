@@ -18,16 +18,17 @@
 
 (s/defn fetcher
   "GETs URL with basic auth"
-  [{:keys [retry-wait max-retries login pw]} :- utils/Serv
+  [{:keys [retry-wait max-retries insecure login pw]} :- utils/Serv
    url :- s/Str]
   (log/trace "fetcher: fetching" url)
   (-> url
-      (client/get (merge {:basic-auth [login pw]
-                          :throw-entire-message? true
-                          :retry-handler (utils/make-retry-fn retry-wait max-retries)
-                          :query-params {}} 
-                         (utils/trust-settings)))
-      :body))
+    (client/get (merge {:basic-auth [login pw]
+                        :throw-entire-message? true
+                        :insecure? insecure
+                        :retry-handler (utils/make-retry-fn retry-wait max-retries)
+                        :query-params {}} 
+                       (utils/trust-settings)))
+    :body))
 
 
 
@@ -43,19 +44,23 @@
                                      (utils/pathify fetch paths :version))
                                     (json/decode true)))
           (catch Exception e
-            (if (instance? clojure.lang.ExceptionInfo e)
-              (case (some-> e .data :status)
-                404 (throw (Exception. 
-                            ;; TODO: check for incorrect plugin path, maybe by testing the WRONG path to see if it succeeds?
-                            (format
-                             "Server on %s doesn't have the Migrator plugin installed or enabled. Enable it. Make sure it's installed in extend/addon/migrator not extend/addon/migrator-plugin too."
-                             base-url)))
-                401 (throw (Exception. 
-                            (format
-                             "You have the incorrect password set in the config file for the server at %s"
-                             base-url)))
-                (throw e))
-              (throw e))))
+            (cond
+             (instance? javax.net.ssl.SSLException (.getCause e))
+             (throw (Exception. (format "Your SSL certificate setup on %s either uses SNI which is not supported, or is broken. Fix it, or add insecure true to the conf file for this host." base-url)))
+             (and (instance? clojure.lang.ExceptionInfo e)
+                  (= 404 (some-> e .data :status)))
+             (throw (Exception. 
+                     ;; TODO: check for incorrect plugin path, maybe by testing the WRONG path to see if it succeeds?
+                     (format
+                      "Server on %s doesn't have the Migrator plugin installed or enabled. Enable it. Make sure it's installed in extend/addon/migrator not extend/addon/migrator-plugin too."
+                      base-url)))
+             (and (instance? clojure.lang.ExceptionInfo e)
+                  (= 401 (some-> e .data :status))) 
+             (throw (Exception. 
+                     (format
+                      "You have the incorrect password set in the config file for the server at %s"
+                      base-url)))
+             :else (throw e))))
         {:keys [hubzilla redmatrix plugin]} utils/min-supported-versions
         cleaned-platform (utils/clean-platform platform_version)]
     (log/info base-url "is running versions:" v)
@@ -94,8 +99,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (comment
-
-
 
 
   )

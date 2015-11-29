@@ -18,10 +18,10 @@
     (throw (Exception. "Wrong. You can't migrate to the same server you're migrating from.")))
 
   ;; don't wait for a full fetch before yelling if push server is misconfigured
-  (when (-> p/push :push net/test-version)
-    (m/run-fetch m/fetch)  ;; will check fetch version before run
-    (p/run-push p/push)
-    (log/info "Migration complete! Check for errors.")))
+  (-> p/push :push net/test-version)
+  (m/run-fetch m/fetch)  ;; will check fetch version before run
+  (p/run-push p/push)
+  (log/info "Migration complete! Check for errors."))
 
 
 (defn -main
@@ -76,6 +76,14 @@
       (mount/start-with-args (conf/read-and-validate
                               "/home/cust/spaz/src/migrator-configs/redmatrix-test.yml")))
     )
+
+  (do 
+    (mount/stop)
+    (s/with-fn-validation
+      (mount/start-with-args (conf/read-and-validate
+                              "/home/cust/spaz/src/migrator-configs/joren.yml")))
+    )
+
 
   (conf/read-and-validate "config.edn")
 

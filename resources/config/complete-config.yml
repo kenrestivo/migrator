@@ -4,7 +4,7 @@ fetch:  # Settings for your old server
     base-url: http://hubzilla  # What it says. You can include a http://host:port too.
     pw: test  
     login: test
-    max-retries:  10  # How many times to retry on a transient network error.
+    insecure: false # Set this to true if you are running SNI (more than one SSL cert on the same server    max-retries:  10  # How many times to retry on a transient network error.
     retry-wait: 5000  # How long (milliseconds) to wait between retries.  Algorithm will double this every time.
     socket-timeout: 120000  #Timeout (ms) waiting for a socket to open.  If the server is slow, set longer.
     conn-timeout: 20000 # How long (ms) to wait for a connection to the server.
@@ -14,6 +14,7 @@ push:  # Settings for your NEW server. Logins and passwords can be different.
     pw: test
     login: test
     max-retries:  10
+    insecure: false # Set this to true if you are running SNI (more than one SSL cert on the same server)
     seize: false # Relevant only for push. Will take control of the imported channels from other hubs
     socket-timeout: 120000
     conn-timeout: 20000
