@@ -35,8 +35,14 @@ post_max_size = 100M
 upload_max_filesize = 100M
 
 ```
+
 4. Delete or expire any accounts from the old server that you don't want to migrate.
 5. Make sure your new server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
+6. If your server uses [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) (i.e. has more than one SSL site served off of the same IP address), then you'll need to set the
+```yaml
+insecure: true
+```
+in your Migrator conf file for that server
 
 ## Downloading
 
@@ -96,6 +102,7 @@ You can run it without making a uberjar by just
 - Directory doesn't seem to update after migration. Not sure why yet.
 - MySQL crashes on the server during channel imports, which seems to be a Hubzilla resource-usage problem. You should try the advice in [the Hubzilla INSTALL.txt](https://github.com/redmatrix/hubzilla/blob/master/install/INSTALL.txt#L346) with regard to prefork and mysql settings.
 - JVM stacktraces are huge and noisy, and Clojure stacktraces are huger and noisier. Digging through the noise to find the real source of the error is not always easy.
+- The Java HTTPClient used by the Migrator doesn't support SNI. So you'll get certificate errors; use "insecure: true" in conf file to avoid/remedy this.
 
 ## License
 
