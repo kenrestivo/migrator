@@ -1,4 +1,4 @@
-(defproject migrator "0.1.3"
+(defproject migrator "0.1.4"
   :description "Migrate all users from RedMatrix or Hubzilla hubs to a Hubzilla hub"
   :url "https://github.com/kenrestivo/migrator"
   :license {:name "Eclipse Public License"

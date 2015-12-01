@@ -25,9 +25,10 @@ First alpha release 0.1.0
 
 ## Preparing for migration
 
-1. Assure you have met the requirements as above
-2. Set your /etc/my.cnf and /etc/apache2/mods-enabled/mpm_prefork.conf as recommended in [the Hubzilla INSTALL.txt](https://github.com/redmatrix/hubzilla/blob/master/install/INSTALL.txt#L346) with regard to connections and prefork settings.
-3. On the new server you are importing to, be sure to set your max_execution time and max_input_time to very large numbers, and your maximum post size very large too, i.e.
+1. __BACK UP YOUR SERVER DATA!__ Back up your SQL database using mysqldump or pg_dump on the new server to which you will be importing. If anything goes sideways, you can recover.
+2. Assure you have met the requirements as above
+3. Set your /etc/my.cnf and /etc/apache2/mods-enabled/mpm_prefork.conf as recommended in [the Hubzilla INSTALL.txt](https://github.com/redmatrix/hubzilla/blob/master/install/INSTALL.txt#L346) with regard to connections and prefork settings.
+4. On the new server you are importing to, be sure to set your max_execution time and max_input_time to very large numbers, and your maximum post size very large too, i.e.
 ```conf
 max_execution_time = 300
 max_input_time = 300
@@ -36,9 +37,9 @@ upload_max_filesize = 100M
 
 ```
 
-4. Delete or expire any accounts from the old server that you don't want to migrate.
-5. Make sure your new server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
-6. If your server uses [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) (i.e. has more than one SSL site served off of the same IP address), then you'll need to set the
+5. Delete or expire any accounts from the old server that you don't want to migrate.
+6. Make sure your new server is set to automatically restart MySQL if it crashes. Imports might cause it to OOM.
+7. If your server uses [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) (i.e. has more than one SSL site served off of the same IP address), then you'll need to set the
 ```yaml
 insecure: true
 ```
